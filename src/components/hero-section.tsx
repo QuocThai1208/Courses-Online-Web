@@ -18,15 +18,6 @@ export function HeroSection() {
               Khám phá hàng nghìn khóa học chất lượng cao từ các chuyên gia hàng đầu. Học tập linh hoạt, tiến bộ nhanh
               chóng với công nghệ hiện đại.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="text-lg px-8">
-                Bắt đầu học ngay
-              </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 bg-transparent">
-                <Play className="mr-2 h-5 w-5" />
-                Xem demo
-              </Button>
-            </div>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8 pt-8">
@@ -44,13 +35,7 @@ export function HeroSection() {
                 </div>
                 <p className="text-sm text-muted-foreground">Khóa học</p>
               </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Award className="h-6 w-6 text-primary mr-2" />
-                  <span className="text-2xl font-bold text-primary">95%</span>
-                </div>
-                <p className="text-sm text-muted-foreground">Hài lòng</p>
-              </div>
+
             </div>
           </div>
 

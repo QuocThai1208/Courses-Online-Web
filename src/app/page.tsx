@@ -4,7 +4,7 @@ import { Footer } from "../components/footer";
 
 import { Header } from "../components/header";
 import { HeroSection } from "../components/hero-section";
-import { Testimonials } from "../components/testimonials";
+
 
 
 export default function HomePage() {
@@ -14,7 +14,7 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <FeaturedCourses />
-        <Testimonials />
+
       </main>
       <Footer />
     </div>
