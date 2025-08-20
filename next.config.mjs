@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    appDir: true
+  },
+  // Thêm nếu app không ở root
+  srcDir: 'src',
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -11,4 +16,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default nextConfig;
