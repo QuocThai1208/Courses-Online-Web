@@ -1,8 +1,11 @@
-import { Header } from "@/components/header"
-import { HeroSection } from "@/components/hero-section"
-import { FeaturedCourses } from "@/components/featured-courses"
-import { Testimonials } from "@/components/testimonials"
-import { Footer } from "@/components/footer"
+
+import { FeaturedCourses } from "../components/featured-courses";
+import { Footer } from "../components/footer";
+
+import { Header } from "../components/header";
+import { HeroSection } from "../components/hero-section";
+import { Testimonials } from "../components/testimonials";
+
 
 export default function HomePage() {
   return (

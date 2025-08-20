@@ -1,7 +1,9 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Clock, Users, Star } from "lucide-react"
+// import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Button } from "@/components/ui/button"
+// import { Badge } from "@/components/ui/badge"
+import { Clock, Users, Star, Badge } from "lucide-react"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
+import { Button } from "./ui/button"
 
 const courses = [
   {
@@ -58,7 +60,7 @@ export function FeaturedCourses() {
             <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative">
                 <img src={course.image || "/placeholder.svg"} alt={course.title} className="w-full h-48 object-cover" />
-                <Badge className="absolute top-4 left-4" variant="secondary">
+                <Badge className="absolute top-4 left-4">
                   {course.level}
                 </Badge>
               </div>
