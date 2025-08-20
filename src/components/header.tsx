@@ -11,7 +11,7 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8" />
-            <span className="text-xl font-bold">EduManage</span>
+            <span className="text-xl font-bold">EduManageTTT</span>
           </div>
 
           {/* Navigation */}

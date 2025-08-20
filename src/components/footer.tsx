@@ -10,7 +10,7 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <BookOpen className="h-8 w-8 text-sidebar-primary" />
-              <span className="text-xl font-bold">EduManage</span>
+              <span className="text-xl font-bold">EducationTTT</span>
             </div>
             <p className="text-muted-foreground">
               Nền tảng quản lý khóa học trực tuyến hàng đầu, mang đến trải nghiệm học tập tốt nhất cho mọi người.
@@ -58,47 +58,20 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Support */}
-          <div>
-            <h3 className="font-semibold mb-4">Hỗ trợ</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/help" className="text-muted-foreground hover:text-sidebar-accent transition-colors">
-                  Trung tâm trợ giúp
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="text-muted-foreground hover:text-sidebar-accent transition-colors">
-                  Câu hỏi thường gặp
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-muted-foreground hover:text-sidebar-accent transition-colors">
-                  Chính sách bảo mật
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-muted-foreground hover:text-sidebar-accent transition-colors">
-                  Điều khoản sử dụng
-                </Link>
-              </li>
-            </ul>
-          </div>
+
 
           {/* Contact */}
           <div>
             <h3 className="font-semibold mb-4">Liên hệ</h3>
             <ul className="space-y-2 text-muted-foreground">
-              <li>Email: info@edumanage.vn</li>
+              <li>Email: info@edumanagettt.vn</li>
               <li>Điện thoại: (84) 123 456 789</li>
-              <li>Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</li>
+              <li>Địa chỉ: TP.HCM</li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-sidebar-border mt-8 pt-8 text-center text-muted-foreground">
-          <p>&copy; 2024 EduManage. Tất cả quyền được bảo lưu.</p>
-        </div>
+
       </div>
     </footer>
   )
