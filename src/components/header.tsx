@@ -1,17 +1,21 @@
-
+'use client'
 import { BookOpen, Menu } from "lucide-react"
 import Link from "next/link"
 import { Button } from "./ui/button"
+import { useRouter } from "next/navigation"
 
 export function Header() {
+
+  const router = useRouter()
+
   return (
     <header className="bg-primary text-primary-foreground shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => router.push('/')}>
             <BookOpen className="h-8 w-8" />
-            <span className="text-xl font-bold">EduManage</span>
+            <span className="text-xl font-bold">EduManageTTT</span>
           </div>
 
           {/* Navigation */}
@@ -32,7 +36,7 @@ export function Header() {
 
           {/* Auth buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" className="text-primary-foreground hover:text-accent">
+            <Button variant="ghost" className="text-primary-foreground hover:opacity-80" onClick={() => router.push('/auth/signin')}>
               Đăng nhập
             </Button>
             <Button variant="secondary">Đăng ký</Button>
