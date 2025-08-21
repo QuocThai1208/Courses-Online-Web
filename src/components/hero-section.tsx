@@ -4,7 +4,7 @@ import { Button } from "./ui/button"
 
 export function HeroSection() {
   return (
-    <section className="relative bg-gradient-to-br from-primary/5 to-accent/5 py-20">
+    <section className="relative bg-gradient-to-br from-primary/5 to-accent/5 py-20 rounded-xl border-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
