@@ -140,28 +140,13 @@ export function DiscussionForum() {
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{discussion.author.name}</span>
-                    {discussion.author.role === "instructor" && (
-                      <Badge variant="secondary" className="text-xs">
-                        Giảng viên
-                      </Badge>
-                    )}
-                    {discussion.isPinned && <Pin className="w-4 h-4 text-primary" />}
+
                     <span className="text-sm text-muted-foreground">{discussion.timestamp}</span>
                   </div>
 
                   <p className="text-sm leading-relaxed">{discussion.content}</p>
 
                   <div className="flex items-center gap-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`h-8 px-2 ${discussion.isLiked ? "text-primary" : ""}`}
-                      onClick={() => toggleLike(discussion.id)}
-                    >
-                      <ThumbsUp className="w-4 h-4 mr-1" />
-                      {discussion.likes}
-                    </Button>
-
                     <Button variant="ghost" size="sm" className="h-8 px-2">
                       <Reply className="w-4 h-4 mr-1" />
                       Trả lời ({discussion.replies})
