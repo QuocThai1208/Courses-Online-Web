@@ -1,46 +1,63 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 import { Textarea } from "../ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Badge } from "../ui/badge"
-import { Button } from "../ui/button"
 import { Upload, X, Plus } from "lucide-react"
+import api, { endpoints } from "@/src/utils/api"
 
 interface CourseBasicInfoProps {
     data: any
     onUpdate: (data: any) => void
 }
 
-export function CourseBasicInfo({ data, onUpdate }: CourseBasicInfoProps) {
-    const [tags, setTags] = useState<string[]>(data.tags || [])
-    const [newTag, setNewTag] = useState("")
+interface Category {
+    id: number;
+    name: string;
+}
 
-    const handleAddTag = () => {
-        if (newTag.trim() && !tags.includes(newTag.trim())) {
-            const updatedTags = [...tags, newTag.trim()]
-            setTags(updatedTags)
-            onUpdate({ ...data, tags: updatedTags })
-            setNewTag("")
+export function CourseBasicInfo({ data, onUpdate }: CourseBasicInfoProps) {
+    const [preview, setPreview] = useState("")
+    const [categories, setCategories] = useState<Category[]>([])
+
+    const loadCatrgories = async () => {
+        try {
+            const res = await api.get(endpoints['categories'])
+            setCategories(res.data)
+        }
+        catch (e) {
+            console.log(e)
         }
     }
 
-    const handleRemoveTag = (tagToRemove: string) => {
-        const updatedTags = tags.filter((tag) => tag !== tagToRemove)
-        setTags(updatedTags)
-        onUpdate({ ...data, tags: updatedTags })
-    }
-
-    const handleInputChange = (field: string, value: string) => {
+    const handleInputChange = (field: string, value: string | File | Number) => {
         onUpdate({ ...data, [field]: value })
     }
 
+    useEffect(() => {
+        loadCatrgories();
+    }, [])
+
     return (
         <div className="space-y-6">
-            {/* Course Title */}
+            {/* Course subject */}
+            <div className="space-y-2">
+                <Label htmlFor="name" className="text-base font-medium">
+                    Chủ đề khóa học*
+                </Label>
+                <Input
+                    id="subject"
+                    placeholder="Nhập chủ đề khóa học của bạn"
+                    value={data.subject || ""}
+                    onChange={(e) => handleInputChange("subject", e.target.value)}
+                    className="text-lg"
+                />
+                <p className="text-sm text-muted-foreground">Chủ đề khóa học nên rõ ràng và thu hút học viên</p>
+            </div>
+            {/* Course name */}
             <div className="space-y-2">
                 <Label htmlFor="name" className="text-base font-medium">
                     Tên khóa học *
@@ -74,19 +91,14 @@ export function CourseBasicInfo({ data, onUpdate }: CourseBasicInfoProps) {
                 {/* Category */}
                 <div className="space-y-2">
                     <Label className="text-base font-medium">Danh mục *</Label>
-                    <Select value={data.category || ""} onValueChange={(value) => handleInputChange("category", value)}>
+                    <Select value={String(data.category_id) || ""} onValueChange={(value) => handleInputChange("category_id", Number.parseInt(value))}>
                         <SelectTrigger>
                             <SelectValue placeholder="Chọn danh mục" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="technology">Công nghệ</SelectItem>
-                            <SelectItem value="business">Kinh doanh</SelectItem>
-                            <SelectItem value="design">Thiết kế</SelectItem>
-                            <SelectItem value="marketing">Marketing</SelectItem>
-                            <SelectItem value="language">Ngôn ngữ</SelectItem>
-                            <SelectItem value="health">Sức khỏe</SelectItem>
-                            <SelectItem value="music">Âm nhạc</SelectItem>
-                            <SelectItem value="other">Khác</SelectItem>
+                            {categories?.map(item => (
+                                <SelectItem key={item.id} value={String(item?.id)}>{item?.name}</SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                 </div>
@@ -99,10 +111,9 @@ export function CourseBasicInfo({ data, onUpdate }: CourseBasicInfoProps) {
                             <SelectValue placeholder="Chọn cấp độ" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="beginner">Cơ bản</SelectItem>
-                            <SelectItem value="intermediate">Trung cấp</SelectItem>
-                            <SelectItem value="advanced">Nâng cao</SelectItem>
-                            <SelectItem value="all">Tất cả cấp độ</SelectItem>
+                            <SelectItem value="so_cap">Cơ cấp</SelectItem>
+                            <SelectItem value="trung_cap">Trung cấp</SelectItem>
+                            <SelectItem value="cao_cap">Cao cấp</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -118,7 +129,7 @@ export function CourseBasicInfo({ data, onUpdate }: CourseBasicInfoProps) {
                         type="number"
                         placeholder="0"
                         value={data.price || ""}
-                        onChange={(e) => handleInputChange("price", e.target.value)}
+                        onChange={(e) => handleInputChange("price", Number.parseInt(e.target.value))}
                     />
                     <p className="text-sm text-muted-foreground">Nhập 0 nếu khóa học miễn phí</p>
                 </div>
@@ -132,54 +143,9 @@ export function CourseBasicInfo({ data, onUpdate }: CourseBasicInfoProps) {
                         type="number"
                         placeholder="0"
                         value={data.duration || ""}
-                        onChange={(e) => handleInputChange("duration", e.target.value)}
+                        onChange={(e) => handleInputChange("duration", Number.parseInt(e.target.value))}
                     />
                     <p className="text-sm text-muted-foreground">Tổng thời lượng ước tính của khóa học</p>
-                </div>
-            </div>
-
-            {/* Learning Objectives */}
-            <div className="space-y-2">
-                <Label htmlFor="objectives" className="text-base font-medium">
-                    Mục tiêu học tập
-                </Label>
-                <Textarea
-                    id="objectives"
-                    placeholder="Học viên sẽ học được gì sau khi hoàn thành khóa học này?"
-                    value={data.objectives || ""}
-                    onChange={(e) => handleInputChange("objectives", e.target.value)}
-                    rows={3}
-                />
-            </div>
-
-            {/* Tags */}
-            <div className="space-y-3">
-                <Label className="text-base font-medium">Từ khóa</Label>
-                <div className="flex flex-wrap gap-2 mb-3">
-                    {tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                            {tag}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-4 w-4 p-0 hover:bg-transparent"
-                                onClick={() => handleRemoveTag(tag)}
-                            >
-                                <X className="h-3 w-3" />
-                            </Button>
-                        </Badge>
-                    ))}
-                </div>
-                <div className="flex gap-2">
-                    <Input
-                        placeholder="Thêm từ khóa"
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        onKeyPress={(e) => e.key === "Enter" && handleAddTag()}
-                    />
-                    <Button onClick={handleAddTag} variant="outline" size="sm">
-                        <Plus className="h-4 w-4" />
-                    </Button>
                 </div>
             </div>
 
@@ -191,13 +157,31 @@ export function CourseBasicInfo({ data, onUpdate }: CourseBasicInfoProps) {
                 </CardHeader>
                 <CardContent>
                     <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                        <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-sm text-muted-foreground mb-2">Kéo thả ảnh vào đây hoặc click để chọn file</p>
+                        {preview ? (
+                            <img
+                                src={preview}
+                                alt="preview"
+                                className="mx-auto h-32 object-cover mb-4 rounded"
+                            />
+                        ) : (
+                            <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        )}
+                        <p className="text-sm text-muted-foreground mb-2">Click để chọn file</p>
                         <p className="text-xs text-muted-foreground">PNG, JPG, GIF tối đa 10MB</p>
                         <Input
-                            type="hidden"
-                            value={data.thumbnail_url || ""}
-                            onChange={(e) => handleInputChange("thumbnail_url", e.target.value)}
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    // hiển thị preview
+                                    const url = URL.createObjectURL(file);
+                                    setPreview(url);
+
+                                    // truyền file lên state cha hoặc upload
+                                    handleInputChange("image", file);
+                                }
+                            }}
                         />
                     </div>
                 </CardContent>

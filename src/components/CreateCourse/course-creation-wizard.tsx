@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Button } from "../ui/button"
 import { Progress } from "../ui/progress"
@@ -8,8 +8,9 @@ import { Badge } from "../ui/badge"
 import { ChevronLeft, ChevronRight, BookOpen, Settings, Eye, Upload } from "lucide-react"
 import { CourseContentBuilder } from "./course-conten-builder"
 import { CourseBasicInfo } from "./course-basic-info"
-import { CourseSettings } from "./course-setting"
 import { CoursePreview } from "./course-preview"
+import { authApis, endpoints } from "@/src/utils/api"
+import { toast } from "@/hooks/use-toast"
 
 const steps = [
     {
@@ -28,13 +29,6 @@ const steps = [
     },
     {
         id: 3,
-        title: "Cài đặt",
-        description: "Lịch trình và quyền truy cập",
-        icon: Settings,
-        component: CourseSettings,
-    },
-    {
-        id: 4,
         title: "Xem trước",
         description: "Kiểm tra và xuất bản khóa học",
         icon: Eye,
@@ -42,9 +36,11 @@ const steps = [
     },
 ]
 
+const token = "EFwE0zIBlCn9Gy0F9aOxxJ88UOFrEn"
+
 export function CourseCreationWizard() {
     const [currentStep, setCurrentStep] = useState(1)
-    const [courseData, setCourseData] = useState({})
+    const [courseData, setCourseData] = useState<any>({})
 
     const currentStepData = steps.find((step) => step.id === currentStep)
     const CurrentComponent = currentStepData?.component || CourseBasicInfo
@@ -66,6 +62,61 @@ export function CourseCreationWizard() {
     const handleStepClick = (stepId: number) => {
         setCurrentStep(stepId)
     }
+
+    const createCourse = async () => {
+        try {
+            const courseRes = await authApis(token).post(endpoints['courses'], {
+                subject: courseData.subject,
+                name: courseData.name,
+                description: courseData.description,
+                category_id: courseData.category_id,
+                level: courseData.level,
+                price: courseData.price,
+                duration: courseData.duration,
+                image: courseData.image
+            }, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
+            const courseId = courseRes.data.id
+
+            for (const chapter of courseData?.chapters) {
+                const chapterRes = await authApis(token).post(endpoints['chapters'], {
+                    course: courseId,
+                    name: chapter.name,
+                    description: chapter.description
+                })
+
+                const chapterId = chapterRes.data.id
+
+                for (const lesson of chapter.lessons) {
+                    const lessonRes = await authApis(token).post(endpoints['lessons'], {
+                        chapter: chapterId,
+                        name: lesson.name,
+                        description: lesson.description,
+                        type: lesson.type,
+                        video_url: lesson.video_url,
+                        duration: lesson.duration,
+                    })
+                }
+            }
+            toast({
+                title: "Thành công",
+                description: "Bạn đã tạo khóa học thành công!",
+                variant: 'success'
+            })
+        } catch (e) {
+            console.log(e)
+            toast({
+                title: "Thất bại",
+                description: "Đã có sự cố vui lòng thử lại sau!",
+                variant: 'destructive'
+            })
+        }
+    }
+
+    useEffect(() => {
+        console.log(courseData)
+    }, [courseData])
 
     return (
         <div className="space-y-8">
@@ -89,7 +140,7 @@ export function CourseCreationWizard() {
             </div>
 
             {/* Step Navigation */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {steps.map((step) => {
                     const Icon = step.icon
                     const isActive = step.id === currentStep
@@ -106,10 +157,10 @@ export function CourseCreationWizard() {
                                 <div className="flex items-center space-x-3">
                                     <div
                                         className={`p-2 rounded-lg ${isActive
-                                                ? "bg-primary text-primary-foreground"
-                                                : isCompleted
-                                                    ? "bg-secondary text-secondary-foreground"
-                                                    : "bg-muted text-muted-foreground"
+                                            ? "bg-primary text-primary-foreground"
+                                            : isCompleted
+                                                ? "bg-secondary text-secondary-foreground"
+                                                : "bg-muted text-muted-foreground"
                                             }`}
                                     >
                                         <Icon className="h-4 w-4" />
@@ -165,7 +216,10 @@ export function CourseCreationWizard() {
 
                 <div className="flex space-x-3">
                     <Button variant="outline">Lưu nháp</Button>
-                    <Button onClick={handleNext} disabled={currentStep === steps.length} className="flex items-center space-x-2">
+                    <Button onClick={() => {
+                        currentStep === steps.length ? createCourse() : handleNext()
+                    }}
+                        className="flex items-center space-x-2">
                         <span>{currentStep === steps.length ? "Xuất bản" : "Tiếp theo"}</span>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
