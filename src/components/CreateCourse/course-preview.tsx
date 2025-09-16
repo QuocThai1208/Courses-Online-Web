@@ -4,16 +4,51 @@ import { Eye, Play, FileText, HelpCircle, Globe, Shield, Calendar, DollarSign } 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge"
 import { Separator } from "../ui/separator"
-import { Button } from "../ui/button"
+import { useEffect, useState } from "react"
+import api, { endpoints } from "@/src/utils/api"
 
 interface CoursePreviewProps {
     data: any
     onUpdate: (data: any) => void
 }
 
+interface Category {
+    id: number;
+    name: string;
+}
+
 export function CoursePreview({ data, onUpdate }: CoursePreviewProps) {
-    const totalLessons = data.sections?.reduce((total: number, section: any) => total + section.items.length, 0) || 0
-    const estimatedDuration = "2 giờ 30 phút" // This would be calculated from actual content
+    const totalLessons = data.chapters?.reduce((total: number, chapter: any) => total + chapter.lessons.length, 0) || 0
+    const [categories, setCategories] = useState<Category[]>([])
+    const getTotalDuration = () => {
+        if (data.chapter) {
+            let totalMinutes = 0
+            data.chapters.forEach((chapter: any) => {
+                chapter.lessons.forEach((lesson: any) => {
+                    if (lesson.duration) {
+                        totalMinutes += Number.parseInt(lesson.duration) || 0
+                    }
+                })
+            })
+            return Math.round(totalMinutes / 60) || 0
+        }
+        return 0
+    }
+
+    const loadCatrgories = async () => {
+        try {
+            const res = await api.get(endpoints['categories'])
+            setCategories(res.data)
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    useEffect(() => {
+        loadCatrgories();
+    }, [])
+
 
     return (
         <div className="space-y-6">
@@ -27,36 +62,32 @@ export function CoursePreview({ data, onUpdate }: CoursePreviewProps) {
                     <CardDescription>Đây là cách khóa học của bạn sẽ hiển thị với học viên</CardDescription>
                 </CardHeader>
             </Card>
+            {data.image && <div className="h-48">
+                <img
+                    src={URL.createObjectURL(data.image || "")}
+                    alt="preview"
+                    className="mx-auto w-full h-48 object-cover mb-4 rounded"
+                />
+            </div>}
 
             {/* Course Preview Card */}
             <Card className="overflow-hidden">
                 {/* Course Header */}
-                <div className="relative h-48 bg-gradient-to-r from-primary to-accent">
-                    <div className="absolute inset-0 bg-black/20" />
-                    <div className="absolute bottom-4 left-6 text-white">
-                        <h1 className="text-2xl font-bold font-[family-name:var(--font-playfair)]">
-                            {data.title || "Tên khóa học"}
-                        </h1>
-                        <p className="text-white/90 mt-1">
-                            {data.category || "Danh mục"} • {data.level || "Cấp độ"}
-                        </p>
-                    </div>
-                    <div className="absolute top-4 right-4">
-                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                            {data.pricing_type === "free"
-                                ? "Miễn phí"
-                                : data.pricing_type === "paid"
-                                    ? `${data.price || "0"} VNĐ`
-                                    : "Đăng ký"}
-                        </Badge>
-                    </div>
+                <div className="pl-6">
+                    <h1 className="text-2xl font-bold font-[family-name:var(--font-playfair)]">
+                        {data.name || "Tên khóa học"}
+                    </h1>
+                    <p className="mt-1">
+                        {data.category_id || "Danh mục"} • {data.level || "Cấp độ"}
+                    </p>
                 </div>
+
 
                 <CardContent className="p-6">
                     {/* Course Stats */}
-                    <div className="grid grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-3 gap-3 mb-6">
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-primary">{data.sections?.length || 0}</div>
+                            <div className="text-2xl font-bold text-primary">{data.chapters?.length || 0}</div>
                             <div className="text-sm text-muted-foreground">Chương</div>
                         </div>
                         <div className="text-center">
@@ -64,16 +95,26 @@ export function CoursePreview({ data, onUpdate }: CoursePreviewProps) {
                             <div className="text-sm text-muted-foreground">Bài học</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-accent">{estimatedDuration}</div>
+                            <div className="text-2xl font-bold text-accent">~{getTotalDuration()}h</div>
                             <div className="text-sm text-muted-foreground">Thời lượng</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-chart-1">4.8</div>
-                            <div className="text-sm text-muted-foreground">Đánh giá</div>
                         </div>
                     </div>
 
                     <Separator className="my-6" />
+
+                    <div className="space-y-3 mb-6">
+                        <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">Giá cả</span>
+                        </div>
+                        <div className="pl-6">
+                            <Badge variant={data.price === "0" ? "secondary" : "default"}>
+                                {data.pricing_type === "0"
+                                    ? "Miễn phí"
+                                    : "Đăng ký"}
+                            </Badge>
+                        </div>
+                    </div>
 
                     {/* Course Description */}
                     <div className="space-y-4">
@@ -82,34 +123,6 @@ export function CoursePreview({ data, onUpdate }: CoursePreviewProps) {
                             {data.description || "Mô tả khóa học sẽ hiển thị ở đây..."}
                         </p>
                     </div>
-
-                    {/* Learning Objectives */}
-                    {data.objectives && (
-                        <>
-                            <Separator className="my-6" />
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-semibold">Mục tiêu học tập</h3>
-                                <p className="text-muted-foreground leading-relaxed">{data.objectives}</p>
-                            </div>
-                        </>
-                    )}
-
-                    {/* Tags */}
-                    {data.tags && data.tags.length > 0 && (
-                        <>
-                            <Separator className="my-6" />
-                            <div className="space-y-3">
-                                <h3 className="text-lg font-semibold">Từ khóa</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {data.tags.map((tag: string) => (
-                                        <Badge key={tag} variant="outline">
-                                            {tag}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </div>
-                        </>
-                    )}
 
                     {/* Course Content */}
                     {data.sections && data.sections.length > 0 && (
@@ -149,87 +162,6 @@ export function CoursePreview({ data, onUpdate }: CoursePreviewProps) {
                     )}
                 </CardContent>
             </Card>
-
-            {/* Course Settings Summary */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Tóm tắt cài đặt</CardTitle>
-                    <CardDescription>Xem lại các cài đặt quan trọng của khóa học</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Pricing */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">Giá cả</span>
-                            </div>
-                            <div className="pl-6">
-                                <Badge variant={data.pricing_type === "free" ? "secondary" : "default"}>
-                                    {data.pricing_type === "free"
-                                        ? "Miễn phí"
-                                        : data.pricing_type === "paid"
-                                            ? `${data.price || "0"} VNĐ`
-                                            : "Đăng ký"}
-                                </Badge>
-                            </div>
-                        </div>
-
-                        {/* Access Level */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <Shield className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">Quyền truy cập</span>
-                            </div>
-                            <div className="pl-6">
-                                <Badge variant="outline">
-                                    {data.access_level === "public"
-                                        ? "Công khai"
-                                        : data.access_level === "private"
-                                            ? "Riêng tư"
-                                            : "Theo lời mời"}
-                                </Badge>
-                            </div>
-                        </div>
-
-                        {/* Schedule */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">Lịch trình</span>
-                            </div>
-                            <div className="pl-6 text-sm text-muted-foreground">
-                                {data.start_date ? `Bắt đầu: ${data.start_date}` : "Chưa thiết lập"}
-                                {data.end_date && <div>Kết thúc: {data.end_date}</div>}
-                            </div>
-                        </div>
-
-                        {/* Language */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <Globe className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">Ngôn ngữ</span>
-                            </div>
-                            <div className="pl-6">
-                                <Badge variant="outline">
-                                    {data.language === "vi" ? "Tiếng Việt" : data.language === "en" ? "English" : "Khác"}
-                                </Badge>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="flex justify-center gap-4">
-                <Button variant="outline" size="lg">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Xem trước đầy đủ
-                </Button>
-                <Button size="lg" className="bg-gradient-to-r from-primary to-accent">
-                    Xuất bản khóa học
-                </Button>
-            </div>
         </div>
     )
 }

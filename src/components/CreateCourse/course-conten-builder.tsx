@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -15,31 +15,58 @@ interface CourseContentBuilderProps {
 
 interface Lesson {
     id: string
-    title: string
+    name: string
     description?: string
+    type: string
     video_url?: string
-    duration?: string
+    duration?: number
     order: number
 }
 
 interface Chapter {
     id: string
-    title: string
+    name: string
     description: string
     lessons: Lesson[]
     order: number
 }
 
+const infoLesson = [{
+    field: "name",
+    label: "Tên bài học",
+    type: 'text'
+}, {
+    field: "description",
+    label: "Mô tả",
+    type: 'text'
+
+}, {
+    field: "type",
+    label: "Thể loại",
+    type: 'text'
+
+}, {
+    field: "duration",
+    label: "Thời lượng",
+    type: 'number'
+}]
+
 export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderProps) {
     const [chapters, setChapters] = useState<Chapter[]>(data.chapters || [])
     const [newChapterTitle, setNewChapterTitle] = useState("")
+
+    const [lesson, setLesson] = useState<any>({})
+
+    const handleSetLesson = (field: string, value: string | number) => {
+        setLesson({ ...lesson, [field]: value })
+    }
 
     const addChapter = () => {
         if (newChapterTitle.trim()) {
             const newChapter: Chapter = {
                 id: Date.now().toString(),
-                title: newChapterTitle,
-                description: "",
+                name: newChapterTitle,
+                description: "Mô tả khóa học",
                 lessons: [],
                 order: chapters.length + 1,
             }
@@ -55,12 +82,14 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
             if (chapter.id === chapterId) {
                 const newLesson: Lesson = {
                     id: Date.now().toString(),
-                    title: "Bài học mới",
-                    description: "",
-                    video_url: "",
-                    duration: "",
+                    name: lesson.name,
+                    description: lesson.description || "",
+                    type: lesson.type || "",
+                    video_url: lesson.video_url || "",
+                    duration: lesson.duration || "",
                     order: chapter.lessons.length + 1,
                 }
+                setLesson({})
                 return {
                     ...chapter,
                     lessons: [...chapter.lessons, newLesson],
@@ -72,6 +101,28 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
         onUpdate({ ...data, chapters: updatedChapters })
     }
 
+    const deleteChapter = (chapterId: string) => {
+        const updateChapters = chapters.filter((chapter) => chapter.id !== chapterId)
+
+        setChapters(updateChapters)
+        onUpdate({ ...data, chapter: updateChapters })
+    }
+
+    const deleteLesson = (chapterId: string, lessonId: string) => {
+        const updateChapters = chapters.map((chapter) => {
+            if (chapter.id === chapterId) {
+                const updateLessons = chapter.lessons.filter((lesson) => lesson.id !== lessonId)
+                return {
+                    ...chapter,
+                    lessons: updateLessons
+                }
+            }
+            return chapter
+        })
+        setChapters(updateChapters)
+        onUpdate(updateChapters)
+    }
+
     const getTotalLessons = () => {
         return chapters.reduce((total, chapter) => total + chapter.lessons.length, 0)
     }
@@ -81,7 +132,7 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
         chapters.forEach((chapter) => {
             chapter.lessons.forEach((lesson) => {
                 if (lesson.duration) {
-                    totalMinutes += Number.parseInt(lesson.duration) || 0
+                    totalMinutes += lesson.duration || 0
                 }
             })
         })
@@ -148,7 +199,7 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
                                     <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
                                     <div>
                                         <CardTitle className="text-lg">
-                                            Chương {chapterIndex + 1}: {chapter.title}
+                                            Chương {chapterIndex + 1}: {chapter.name}
                                         </CardTitle>
                                         <CardDescription>{chapter.lessons.length} bài học</CardDescription>
                                     </div>
@@ -157,7 +208,9 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
                                     <Button variant="outline" size="sm">
                                         <Edit className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="outline" size="sm">
+                                    <Button variant="outline" size="sm"
+                                        onClick={() => deleteChapter(chapter.id)}
+                                    >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -174,11 +227,11 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
                                             <span className="font-medium">
-                                                Bài {lessonIndex + 1}: {lesson.title}
+                                                Bài {lessonIndex + 1}: {lesson.name}
                                             </span>
-                                            <Badge variant="outline" className="text-xs">
-                                                Bài học
-                                            </Badge>
+                                            {lesson.type && <Badge variant="outline" className="text-xs">
+                                                {lesson.type}
+                                            </Badge>}
                                             {lesson.duration && (
                                                 <Badge variant="secondary" className="text-xs">
                                                     {lesson.duration} phút
@@ -190,14 +243,14 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
                                             <p className="text-xs text-muted-foreground mt-1">Video: {lesson.video_url}</p>
                                         )}
                                     </div>
+
                                     <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm">
-                                            <Play className="h-4 w-4" />
-                                        </Button>
                                         <Button variant="outline" size="sm">
                                             <Edit className="h-4 w-4" />
                                         </Button>
-                                        <Button variant="outline" size="sm">
+                                        <Button variant="outline" size="sm"
+                                            onClick={() => deleteLesson(chapter.id, lesson.id)}
+                                        >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -206,29 +259,37 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
 
                             <div className="border-2 border-dashed border-primary/20 rounded-lg p-4 bg-primary/5">
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 flex-1 mx-4">
                                         <div className="p-2 rounded-full bg-primary/10">
                                             <Plus className="h-4 w-4 text-primary" />
                                         </div>
-                                        <div>
-                                            <p className="font-medium text-sm">Thêm bài học mới</p>
-                                            <p className="text-xs text-muted-foreground">Tạo bài học video cho chương này</p>
+                                        <div className="flex-1">
+                                            {infoLesson.map((item, index) => (
+                                                <Input
+                                                    key={index}
+                                                    className="w-full"
+                                                    placeholder={item.label}
+                                                    type={item.type}
+                                                    value={lesson[item.field] || ""}
+                                                    onChange={(e) => handleSetLesson(item.field, item.field === "duration" ? Number.parseInt(e.target.value) : e.target.value)}
+                                                />
+                                            ))}
                                         </div>
                                     </div>
-                                    <Button onClick={() => addLesson(chapter.id)} className="bg-primary hover:bg-primary/90" size="sm">
+                                    <Button onClick={() => addLesson(chapter.id)} disabled={!lesson?.name?.trim()}
+                                        className="bg-primary hover:bg-primary/90" size="sm">
                                         <Plus className="h-4 w-4 mr-2" />
                                         Thêm bài học
                                     </Button>
                                 </div>
                             </div>
-
                             <Separator />
                         </CardContent>
                     </Card>
                 ))}
             </div>
 
-            {/* Resource Library */}
+            {/* Resource Library
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -247,7 +308,7 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
                         </Button>
                     </div>
                 </CardContent>
-            </Card>
+            </Card> */}
         </div>
     )
 }
