@@ -66,7 +66,7 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
             const newChapter: Chapter = {
                 id: Date.now().toString(),
                 name: newChapterTitle,
-                description: "Mô tả khóa học",
+                description: "Mô tả chương",
                 lessons: [],
                 order: chapters.length + 1,
             }
@@ -83,7 +83,7 @@ export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderPro
                 const newLesson: Lesson = {
                     id: Date.now().toString(),
                     name: lesson.name,
-                    description: lesson.description || "",
+                    description: lesson.description || "Mô tả bài học",
                     type: lesson.type || "",
                     video_url: lesson.video_url || "",
                     duration: lesson.duration || "",
