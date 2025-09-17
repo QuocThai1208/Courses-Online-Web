@@ -21,7 +21,7 @@ export function CoursePreview({ data, onUpdate }: CoursePreviewProps) {
     const totalLessons = data.chapters?.reduce((total: number, chapter: any) => total + chapter.lessons.length, 0) || 0
     const [categories, setCategories] = useState<Category[]>([])
     const getTotalDuration = () => {
-        if (data.chapter) {
+        if (data.chapters) {
             let totalMinutes = 0
             data.chapters.forEach((chapter: any) => {
                 chapter.lessons.forEach((lesson: any) => {
@@ -33,6 +33,11 @@ export function CoursePreview({ data, onUpdate }: CoursePreviewProps) {
             return Math.round(totalMinutes / 60) || 0
         }
         return 0
+    }
+
+    const findCategory = (catId: Number) => {
+        const item = categories.find(cat => cat.id === catId)
+        return item?.name
     }
 
     const loadCatrgories = async () => {
@@ -78,7 +83,7 @@ export function CoursePreview({ data, onUpdate }: CoursePreviewProps) {
                         {data.name || "Tên khóa học"}
                     </h1>
                     <p className="mt-1">
-                        {data.category_id || "Danh mục"} • {data.level || "Cấp độ"}
+                        {findCategory(Number.parseInt(data.category_id)) || "Danh mục"} • {data.level || "Cấp độ"}
                     </p>
                 </div>
 
