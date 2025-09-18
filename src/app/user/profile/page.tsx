@@ -9,32 +9,12 @@ import { authApis, endpoints } from "@/src/utils/api";
 import { useEffect, useState } from "react";
 
 const Profile = () => {
-
-    const token = "yTPyQciBS3wkErFTnlcJCzOtiW5P1P";
-    const [user, setUser] = useState();
-
-    const loadUser = async () => {
-        try {
-            const res = await authApis(token).get(endpoints['user'])
-            console.log(res.data)
-            setUser(res.data)
-        }
-        catch (e) {
-            console.log(e)
-        }
-
-    }
-
-    useEffect(() => {
-        loadUser();
-    }, [])
-
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-6 py-12 max-w-7xl">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">
-                        <ProfileHeader user={user} />
+                        <ProfileHeader />
                         <EnrolledCourses />
                         <ProfileTabs />
                     </div>
