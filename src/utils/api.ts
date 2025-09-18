@@ -15,6 +15,7 @@ export const endpoints = {
 
     lessons: 'lessons/',
 
+    enrollments: 'enrollments/',
     enrollmentsCreate: 'enrollments/create/'
 }
 

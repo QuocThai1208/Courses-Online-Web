@@ -11,6 +11,7 @@ import api, { authApis, endpoints } from "@/src/utils/api"
 import { MyDispatchContext } from "@/src/context/userContext"
 import { useRouter } from "next/navigation"
 import qs from 'qs';
+import { toast } from "@/hooks/use-toast"
 
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false)
@@ -54,6 +55,11 @@ export function LoginForm() {
             }
         } catch (e) {
             console.log("error get token:", e)
+            toast({
+                title: "Thông báo",
+                description: "Tên đăng nhập hoặc mật khẩu không đúng",
+                variant: 'destructive'
+            })
         }
         finally {
             setLoading(false)
