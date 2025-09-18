@@ -30,7 +30,7 @@ export function ProfileStats() {
     ]
 
     return (
-        <Card className="shadow-sm">
+        <Card className="shadow-xl bg-white/80">
             <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-4 font-sans">Thống kê học tập</h3>
                 <div className="space-y-4">
