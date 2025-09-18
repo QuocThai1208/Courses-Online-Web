@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "../components/header";
 import { Footer } from "../components/footer";
-import { ToastProvider } from "../components/ui/toast";
 import { Toaster } from "../components/ui/toaster";
+import ClientProvider from "../components/clientProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,17 +26,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header />
-        <main className="mt-10 mb-10 px-6 md:px-12 lg:px-20">
-          {children}
-        </main>
-        <Footer />
-        <Toaster />
+        <ClientProvider>
+          <Header />
+          <main className="mt-10 mb-10 px-6 md:px-12 lg:px-20">
+            {children}
+          </main>
+          <Footer />
+          <Toaster />
+        </ClientProvider>
       </body>
     </html>
   );
