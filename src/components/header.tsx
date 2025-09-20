@@ -39,7 +39,7 @@ export function Header() {
 
           {/* Auth buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" className="text-primary-foreground hover:opacity-80" onClick={() => router.push('/auth/signin')}>
+            <Button variant="ghost" className="text-primary-foreground hover:opacity-80" onClick={() => router.push('/user/login')}>
               Đăng nhập
             </Button>
             <Button variant="secondary">Đăng ký</Button>
