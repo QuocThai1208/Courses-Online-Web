@@ -36,7 +36,36 @@ const steps = [
     },
 ]
 
-const token = "EFwE0zIBlCn9Gy0F9aOxxJ88UOFrEn"
+const token = "CidS0bA9jrxwSQqywBNljTHOSfYeox"
+
+const infoCourse = [{
+    field: 'subject',
+    label: "tên chủ đề"
+}, {
+    field: 'name',
+    label: 'tên khóa học'
+}, {
+    field: 'description',
+    label: "mô tả khóa học"
+}, {
+    field: 'category_id',
+    label: 'danh mục khóa học'
+}, {
+    field: 'level',
+    label: 'cấp độ khóa học'
+}, {
+    field: 'price',
+    label: 'giá khóa học'
+}, {
+    field: 'duration',
+    label: 'thời lượng ước tính khóa học khóa học'
+}, {
+    field: 'image',
+    label: 'ảnh khóa học'
+}, {
+    field: 'chapters',
+    label: 'chương của khóa học'
+}]
 
 export function CourseCreationWizard() {
     const [currentStep, setCurrentStep] = useState(1)
@@ -63,54 +92,90 @@ export function CourseCreationWizard() {
         setCurrentStep(stepId)
     }
 
-    const createCourse = async () => {
-        try {
-            const courseRes = await authApis(token).post(endpoints['courses'], {
-                subject: courseData.subject,
-                name: courseData.name,
-                description: courseData.description,
-                category_id: courseData.category_id,
-                level: courseData.level,
-                price: courseData.price,
-                duration: courseData.duration,
-                image: courseData.image
-            }, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            })
-            const courseId = courseRes.data.id
-
-            for (const chapter of courseData?.chapters) {
-                const chapterRes = await authApis(token).post(endpoints['chapters'], {
-                    course: courseId,
-                    name: chapter.name,
-                    description: chapter.description
-                })
-
-                const chapterId = chapterRes.data.id
-
-                for (const lesson of chapter.lessons) {
-                    const lessonRes = await authApis(token).post(endpoints['lessons'], {
-                        chapter: chapterId,
-                        name: lesson.name,
-                        description: lesson.description,
-                        type: lesson.type,
-                        video_url: lesson.video_url,
-                        duration: lesson.duration,
-                    })
-                }
-            }
+    const validate = () => {
+        if (Object.values(courseData).length === 0) {
             toast({
-                title: "Thành công",
-                description: "Bạn đã tạo khóa học thành công!",
-                variant: 'success'
-            })
-        } catch (e) {
-            console.log(e)
-            toast({
-                title: "Thất bại",
-                description: "Đã có sự cố vui lòng thử lại sau!",
+                title: "Thống báo",
+                description: "Vui lòng điền thông tin!",
                 variant: 'destructive'
             })
+            return false
+        }
+
+        for (let i of infoCourse) {
+            if (!(i.field in courseData)) {
+                toast({
+                    title: "Thông báo",
+                    description: "Vui lòng điền thông tin " + i.label,
+                    variant: 'destructive'
+                })
+                return false
+            }
+        }
+
+        for (let chapter of courseData.chapters) {
+            if (!chapter.lessons || !chapter.lessons.length) {
+                toast({
+                    title: "Thông báo",
+                    description: "Vui lòng điền thông tin bài học của chương!",
+                    variant: 'destructive'
+                })
+                return false
+            }
+        }
+        return true
+    }
+
+    const createCourse = async () => {
+        if (validate() === true) {
+            try {
+                const courseRes = await authApis(token).post(endpoints['courses'], {
+                    subject: courseData.subject,
+                    name: courseData.name,
+                    description: courseData.description,
+                    category_id: courseData.category_id,
+                    level: courseData.level,
+                    price: courseData.price,
+                    duration: courseData.duration,
+                    image: courseData.image
+                }, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                })
+                const courseId = courseRes.data.id
+
+                for (const chapter of courseData?.chapters) {
+                    const chapterRes = await authApis(token).post(endpoints['chapters'], {
+                        course: courseId,
+                        name: chapter.name,
+                        description: chapter.description
+                    })
+
+                    const chapterId = chapterRes.data.id
+
+                    for (const lesson of chapter.lessons) {
+                        const lessonRes = await authApis(token).post(endpoints['lessons'], {
+                            chapter: chapterId,
+                            name: lesson.name,
+                            description: lesson.description,
+                            type: lesson.type,
+                            video_url: lesson.video_url,
+                            duration: lesson.duration,
+                        })
+                    }
+                }
+                toast({
+                    title: "Thành công",
+                    description: "Bạn đã tạo khóa học thành công!",
+                    variant: 'success'
+                })
+            } catch (e) {
+                console.log(e)
+                toast({
+                    title: "Thất bại",
+                    description: "Đã có sự cố vui lòng thử lại sau!",
+                    variant: 'destructive'
+                })
+            }
         }
     }
 
