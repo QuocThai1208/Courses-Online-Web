@@ -3,30 +3,84 @@
 
 "use client";
 
-import { useState } from "react";
+import { MyDispatchContext } from "@/src/context/userContext";
+import api, { authApis, endpoints } from "@/src/utils/api";
+
+import { useContext, useState } from "react";
+import qs from 'qs';
+import { toast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation";
+
 
 export default function LoginPage() {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log({ username, password });
-    };
+
+    const [loading, setLoading] = useState(false)
+    const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("")
+    const router = useRouter()
+    const dispatch = useContext(MyDispatchContext)
+
+
+
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        try {
+            setLoading(true)
+            const res = await api.post(endpoints['token'],
+                qs.stringify({
+                    grant_type: 'password',
+                    username,
+                    password,
+                    client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
+                    client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET
+                }),
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                })
+            if (res.status === 200) {
+                const token = res.data.access_token
+
+                localStorage.setItem('token', token)
+
+                const userRes = await authApis(token).get(endpoints['curent_user'])
+                dispatch?.({
+                    "type": "login",
+                    "payload": userRes.data
+                })
+
+                router.push('/')
+
+            }
+        } catch (e) {
+            console.log("error get token:", e)
+            toast({
+                title: "Thông báo",
+                description: "Tên đăng nhập hoặc mật khẩu không đúng",
+                variant: 'destructive'
+            })
+        }
+        finally {
+            setLoading(false)
+        }
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center">
             <div className="flex bg-white shadow-xl rounded-lg overflow-hidden w-[900px] border-1">
-                {/* Left side - Image */}
+
                 <div className="w-1/2 bg-blue-50 flex items-center justify-center">
                     <img
-                        src="https://api.huynhngoctruong.io.vn/image/user/loginpage.jpg"
+                        src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fpxhere.com%2Fvi%2Fphoto%2F1447663&psig=AOvVaw0aSLSytnJHdjUx0khBal0R&ust=1758449179747000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCLi2weeL548DFQAAAAAdAAAAABAL"
                         alt="school-system"
                         className="w-full h-full"
                     />
                 </div>
 
-                {/* Right side - Form */}
                 <div className="w-1/2 p-8 flex flex-col justify-center">
                     <h2 className="text-xl font-bold text-center mb-6">
                         HỆ THỐNG QUẢN LÝ KHÓA HỌC TRỰC TUYẾN
