@@ -16,13 +16,13 @@ type UserType = "student" | "teacher";
 interface ChatRoomProps {
   roomId: string;
   currentUser: {
-    id: string;
+    id: number;
     firstName: string;
     lastName: string;
     type: UserType;
   };
   targetUser: {
-    id: string;
+    id: number;
     firstName: string;
     lastName: string;
   };
@@ -91,16 +91,15 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, currentUser, targetUser }) 
   };
 
   const isCurrentUserMessage = (message: Message): boolean => {
-    return message.senderId === currentUser.id;
-  };
+  return Number(message.senderId) === currentUser.id;
+};
 
-  const getSenderType = (message: Message): 'teacher' | 'student' => {
-    if (message.senderId === currentUser.id) {
-      return currentUser.type;
-    }
-    // Assume the other user is the opposite type
-    return currentUser.type === 'teacher' ? 'student' : 'teacher';
-  };
+const getSenderType = (message: Message): 'teacher' | 'student' => {
+  if (Number(message.senderId) === currentUser.id) {
+    return currentUser.type;
+  }
+  return currentUser.type === 'teacher' ? 'student' : 'teacher';
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
