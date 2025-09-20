@@ -1,48 +1,35 @@
 "use client";
 
-import { useState, useRef, useEffect, ChangeEvent, FormEvent, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, ChangeEvent, FormEvent } from 'react';
+import db from '../../utils/firebaseConfigs';
+import { ref, push, onValue } from "firebase/database";
 
 interface Message {
-  id: number;
-  text: string;
-  sender: 'teacher' | 'student';
-  time: string;
-  avatar: string;
-  isFile?: boolean;
+  id: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  timestamp: string;
 }
 
-type UserType = 'teacher' | 'student';
+interface ChatRoomProps {
+  roomId: string;
+  currentUser: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    type: 'teacher' | 'student';
+  };
+  targetUser: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+}
 
-const ChatRoom: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: "Chào em! Hôm nay chúng ta sẽ học về React Components nhé.",
-      sender: 'teacher',
-      time: '14:30',
-      avatar: '👨‍🏫',
-      isFile: false
-    },
-    {
-      id: 2,
-      text: "Dạ em chào thầy! Em đã chuẩn bị bài trước rồi ạ.",
-      sender: 'student',
-      time: '14:32',
-      avatar: '👨‍🎓',
-      isFile: false
-    },
-    {
-      id: 3,
-      text: "Rất tốt! Em có thể cho thầy biết useState hook được sử dụng để làm gì không?",
-      sender: 'teacher',
-      time: '14:33',
-      avatar: '👨‍🏫',
-      isFile: false
-    }
-  ]);
-
-  const [newMessage, setNewMessage] = useState<string>('');
-  const [userType, setUserType] = useState<UserType>('student');
+const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, currentUser, targetUser }) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = (): void => {
@@ -52,48 +39,66 @@ const ChatRoom: React.FC = () => {
   };
 
   useEffect(() => {
+    const messagesRef = ref(db, `chats/${roomId}`);
+    const unsubscribe = onValue(messagesRef, (snapshot) => {
+      const data = snapshot.val();
+      const loadedMessages: Message[] = data
+        ? Object.entries(data).map(([key, value]: [string, any]) => ({
+            id: key,
+            ...value,
+          }))
+        : [];
+      setMessages(loadedMessages);
+    });
+
+    return () => unsubscribe();
+  }, [roomId]);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   const handleSendMessage = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (newMessage.trim()) {
-      const message: Message = {
-        id: messages.length + 1,
-        text: newMessage,
-        sender: userType,
-        time: new Date().toLocaleTimeString('vi-VN', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        avatar: userType === 'teacher' ? '👨‍🏫' : '👨‍🎓',
-        isFile: false
+      const msg = {
+        senderId: currentUser.id,
+        senderName: `${currentUser.firstName} ${currentUser.lastName}`,
+        content: newMessage,
+        timestamp: new Date().toISOString(),
       };
-      setMessages([...messages, message]);
-      setNewMessage('');
-    }
-  };
-
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const message: Message = {
-        id: messages.length + 1,
-        text: `📎 Đã gửi file: ${file.name}`,
-        sender: userType,
-        time: new Date().toLocaleTimeString('vi-VN', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        avatar: userType === 'teacher' ? '👨‍🏫' : '👨‍🎓',
-        isFile: true
-      };
-      setMessages([...messages, message]);
+      const messagesRef = ref(db, `chats/${roomId}`);
+      push(messagesRef, msg);
+      setNewMessage("");
     }
   };
 
   const handleQuickMessage = (message: string): void => {
     setNewMessage(message);
+  };
+
+  const formatTime = (timestamp: string): string => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('vi-VN', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
+  const getAvatarText = (name: string): string => {
+    return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const isCurrentUserMessage = (message: Message): boolean => {
+    return message.senderId === currentUser.id;
+  };
+
+  const getSenderType = (message: Message): 'teacher' | 'student' => {
+    if (message.senderId === currentUser.id) {
+      return currentUser.type;
+    }
+    // Assume the other user is the opposite type
+    return currentUser.type === 'teacher' ? 'student' : 'teacher';
   };
 
   return (
@@ -104,85 +109,91 @@ const ChatRoom: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-2">Chat Room</h1>
+            <p className="text-blue-100">
+              {currentUser.firstName} {currentUser.lastName} & {targetUser.firstName} {targetUser.lastName}
+            </p>
           </div>
         </div>
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
-          {messages.map((message: Message) => (
-            <div
-              key={message.id}
-              className={`flex gap-3 ${
-                message.sender === 'teacher' ? 'justify-start' : 'justify-end'
-              }`}
-            >
-              {message.sender === 'teacher' && (
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-lg flex-shrink-0">
-                  {message.avatar}
-                </div>
-              )}
-              
+          {messages.map((message: Message) => {
+            const isCurrentUser = isCurrentUserMessage(message);
+            const senderType = getSenderType(message);
+            
+            return (
               <div
-                className={`max-w-[70%] rounded-2xl px-4 py-3 ${
-                  message.sender === 'teacher'
-                    ? 'bg-white border border-gray-200 text-gray-800'
-                    : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                key={message.id}
+                className={`flex gap-3 ${
+                  isCurrentUser ? 'justify-end' : 'justify-start'
                 }`}
               >
-                <div className={`font-medium text-sm mb-1 ${
-                  message.sender === 'teacher' ? 'text-blue-600' : 'text-blue-100'
-                }`}>
-                  {message.sender === 'teacher' ? 'Giảng viên' : 'Sinh viên'}
+                {!isCurrentUser && (
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 text-white font-medium ${
+                    senderType === 'teacher' ? 'bg-blue-500' : 'bg-green-500'
+                  }`}>
+                    {getAvatarText(message.senderName)}
+                  </div>
+                )}
+                
+                <div
+                  className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                    isCurrentUser
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                      : 'bg-white border border-gray-200 text-gray-800'
+                  }`}
+                >
+                  <div className={`font-medium text-sm mb-1 ${
+                    isCurrentUser ? 'text-blue-100' : (senderType === 'teacher' ? 'text-blue-600' : 'text-green-600')
+                  }`}>
+                    {isCurrentUser 
+                      ? (currentUser.type === 'teacher' ? 'Giảng viên' : 'Sinh viên')
+                      : (senderType === 'teacher' ? 'Giảng viên' : 'Sinh viên')
+                    }
+                  </div>
+                  <div>
+                    {message.content}
+                  </div>
+                  <div className={`text-xs mt-2 ${
+                    isCurrentUser ? 'text-blue-100' : 'text-gray-500'
+                  }`}>
+                    {formatTime(message.timestamp)}
+                  </div>
                 </div>
-                <div className={`${message.isFile ? 'font-medium' : ''}`}>
-                  {message.text}
-                </div>
-                <div className={`text-xs mt-2 ${
-                  message.sender === 'teacher' ? 'text-gray-500' : 'text-blue-100'
-                }`}>
-                  {message.time}
-                </div>
-              </div>
 
-              {message.sender === 'student' && (
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-lg flex-shrink-0">
-                  {message.avatar}
-                </div>
-              )}
-            </div>
-          ))}
+                {isCurrentUser && (
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 text-white font-medium ${
+                    currentUser.type === 'teacher' ? 'bg-blue-500' : 'bg-green-500'
+                  }`}>
+                    {getAvatarText(message.senderName)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
         <div className="p-6 bg-white border-t border-gray-200">
           <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
-            
-            {/* File Upload */}
-            <label className="cursor-pointer">
-              <input
-                type="file"
-                className="hidden"
-                onChange={handleFileUpload}
-                accept=".pdf,.doc,.docx,.txt,.jpg,.png,.gif"
-              />
-              <div className="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
-                <span className="text-xl">📎</span>
-              </div>
-            </label>
-
             {/* Message Input */}
             <div className="flex-1">
               <textarea
                 value={newMessage}
                 onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setNewMessage(e.target.value)}
-                placeholder={`Nhập tin nhắn với vai trò ${userType === 'teacher' ? 'Giảng viên' : 'Sinh viên'}...`}
+                placeholder="Nhập tin nhắn..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={2}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e as any);
+                  }
+                }}
               />
             </div>
 
-            {/* Send Button */}
             <button
               type="submit"
               disabled={!newMessage.trim()}
@@ -192,9 +203,9 @@ const ChatRoom: React.FC = () => {
             </button>
           </form>
 
-          {/* Quick Actions */}
+          {/* Quick Messages */}
           <div className="mt-4 flex gap-2 flex-wrap">
-            {userType === 'teacher' ? (
+            {currentUser.type === 'teacher' ? (
               <>
                 <button 
                   onClick={() => handleQuickMessage('Hôm nay chúng ta sẽ học về...')}
