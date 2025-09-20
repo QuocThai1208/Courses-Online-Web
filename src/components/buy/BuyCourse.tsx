@@ -1,9 +1,8 @@
 "use client";
 
-import { authApis, endpoints } from '@/src/utils/api';
-import React, { useState } from 'react';
+import api, { authApis, endpoints } from '@/src/utils/api';
+import React, { useEffect, useState } from 'react';
 
-// Types definition
 interface FormData {
   paymentMethod: 'MOMO';
 }
@@ -20,7 +19,6 @@ interface CourseBenefit {
   description: string;
 }
 
-// Component
 const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
   const [formData, setFormData] = useState<FormData>({
     paymentMethod: 'MOMO',
@@ -28,9 +26,26 @@ const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Course data
-  const coursePrice: number = 1499000;
-  const courseTitle: string = "Web Development MasterClass";
+  const [coursePrice, setCoursePrice] = useState<number>(0);
+  const [courseTitle, setCourseTitle] = useState<string>('');
+
+  const loadCourseData = async (courseId: Number) => {
+    try {
+      setIsLoading(true);
+      const res = await api.get(endpoints["coursesDetail"](courseId));
+      console.log('Courses response:', res.data);
+      setCourseTitle(res.data.name);
+      setCoursePrice(res.data.price);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadCourseData(id);
+  }, [id]);
 
   const courseFeatures: CourseFeature[] = [
     { id: 1, text: "50 giờ học chất lượng cao" },
@@ -61,11 +76,13 @@ const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
     }
   ];
 
-  const formatPrice = (price: number): string => {
-    return price.toLocaleString('vi-VN') + ' đ';
+  const formatPrice = (price: string | number): string => {
+    const num = typeof price === "string" ? parseFloat(price) : price;
+    return num.toLocaleString("vi-VN") + " đ";
   };
 
   const token = "0X9qd1Bnhmxyg9DViENPKAhhrHhORL"
+
 
   const registerCoure = async () => {
     try {
@@ -207,18 +224,6 @@ const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
               </p>
             </div>
           ))}
-        </div>
-
-        {/* Additional Info */}
-        <div className="mt-8 p-6 bg-yellow-50 rounded-lg border border-yellow-200">
-          <div className="text-center">
-            <h4 className="text-lg font-semibold text-yellow-800 mb-2">
-              🎓 Cam kết chất lượng
-            </h4>
-            <p className="text-yellow-700 text-sm">
-              Hoàn tiền 100% nếu bạn không hài lòng sau 7 ngày đầu tiên
-            </p>
-          </div>
         </div>
       </div>
     </div>
