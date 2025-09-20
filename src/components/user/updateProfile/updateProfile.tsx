@@ -6,10 +6,11 @@ import { Input } from "../../ui/input"
 import { Label } from "../../ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar"
-import { Eye, EyeOff, Camera, Save, X, User, Mail, Phone, Lock } from "lucide-react"
-import { MyUserContext } from "@/src/context/userContext"
+import { Eye, EyeOff, Camera, Save, X, User, Mail, Phone, Lock, LocateIcon, Handshake } from "lucide-react"
+import { MyDispatchContext, MyUserContext } from "@/src/context/userContext"
 import { useRouter } from "next/navigation"
 import { authApis, endpoints } from "@/src/utils/api"
+import { Textarea } from "../../ui/textarea"
 
 
 interface PasswordData {
@@ -27,9 +28,17 @@ const infoProfile = [{
   label: 'Địa chỉ email',
   icon: <Mail className="h-4 w-4" />
 }, {
+  field: 'address',
+  label: 'Địa chỉ',
+  icon: <LocateIcon className="h-4 w-4" />
+}, {
   field: 'phone',
   label: 'Số điện thoại',
   icon: <Phone className="h-4 w-4" />
+}, {
+  field: 'introduce',
+  label: 'Giới thiệu bản thân',
+  icon: <Handshake className="h-4 w-4" />
 }]
 
 const infoPassword = [{
@@ -47,12 +56,13 @@ const infoPassword = [{
 }]
 
 export function UpdateProfile() {
+  const dispatch = useContext(MyDispatchContext)
   const router = useRouter()
   const profileData = useContext(MyUserContext)
+  const [profileChange, setProfileChange] = useState<any>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(false)
-  const [profileUpdate, setProfileUpdate] = useState<any | null>(profileData)
   const [reviewAvtar, setReviewAvatar] = useState<string | null>(null)
   const [msgPassword, setMsgPassword] = useState<string | null>(null)
 
@@ -69,7 +79,7 @@ export function UpdateProfile() {
   })
 
   const handleProfileChange = (field: string, value: string | File) => {
-    setProfileUpdate((prev: any) => ({ ...prev, [field]: value }))
+    setProfileChange((prev: any) => ({ ...prev, [field]: value }))
   }
 
   const handlePasswordChange = (field: keyof PasswordData, value: string) => {
@@ -83,12 +93,18 @@ export function UpdateProfile() {
   const validatePassword = () => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
-    for (let i of infoPassword) {
-      if (passwordData[i.field as keyof PasswordData] === '') {
-        setMsgPassword("Vui lòng nhập " + i.label + "!")
-        return false
-      }
+    if (passwordData.confirmPassword === '' && passwordData.newPassword === '') {
+      return true
     }
+
+    if (passwordData)
+
+      for (let i of infoPassword) {
+        if (passwordData[i.field as keyof PasswordData] === '') {
+          setMsgPassword("Vui lòng nhập " + i.label + "!")
+          return false
+        }
+      }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setMsgPassword("Mật khẩu xác nhận không khớp.")
@@ -101,6 +117,7 @@ export function UpdateProfile() {
     }
 
     setMsgPassword('')
+    handleProfileChange('password', passwordData.newPassword)
     return true
   }
 
@@ -109,14 +126,16 @@ export function UpdateProfile() {
     try {
       setLoading(true)
       const token = localStorage.getItem('token') ?? ''
-      const res = await authApis(token).patch(endpoints['curent_user'], {
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
-        username: profileData.username,
-        email: profileData.email,
-        avatar: profileData.avtar,
-        password: passwordData.newPassword,
-        phone: profileData.phone
+      let formData = new FormData()
+
+      Object.entries(profileChange).forEach(([key, value]) => {
+        formData.append(key, value as string | Blob)
+      })
+      const res = await authApis(token).patch(endpoints['curent_user'], formData)
+      dispatch?.({
+        "type": "update",
+        "payload": res.data
+
       })
       handleCancel()
     } catch (e) {
@@ -142,10 +161,6 @@ export function UpdateProfile() {
     fileInputRef.current?.click()
   }
 
-  useEffect(() => {
-    console.log(passwordData)
-  }, [passwordData])
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto py-12 px-4 max-w-4xl">
@@ -167,7 +182,7 @@ export function UpdateProfile() {
                 <div className="relative group">
                   <div className="relative">
                     <Avatar className="h-32 w-32 ring-4 ring-white shadow-2xl">
-                      <AvatarImage src={reviewAvtar || profileUpdate?.avatar || "/placeholder.svg"} alt="Avatar" />
+                      <AvatarImage src={reviewAvtar || profileData?.avatar || "/placeholder.svg"} alt="Avatar" />
                       <AvatarFallback className="text-2xl font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
                         {profileData?.first_name}
                         {profileData?.last_name}
@@ -226,7 +241,7 @@ export function UpdateProfile() {
                   </Label>
                   <Input
                     id="firstName"
-                    value={profileUpdate?.first_name}
+                    value={profileChange?.first_name ?? profileData?.first_name}
                     onChange={(e) => handleProfileChange("first_name", e.target.value)}
                     placeholder="Nhập tên của bạn"
                     className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
@@ -238,7 +253,7 @@ export function UpdateProfile() {
                   </Label>
                   <Input
                     id="lastName"
-                    value={profileUpdate?.last_name}
+                    value={profileChange?.last_name ?? profileData?.last_name}
                     onChange={(e) => handleProfileChange("last_name", e.target.value)}
                     placeholder="Nhập họ của bạn"
                     className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
@@ -252,13 +267,20 @@ export function UpdateProfile() {
                     {item.icon}
                     {item.label}
                   </Label>
-                  <Input
-                    id={item.field}
-                    value={profileUpdate?.[item.field]}
-                    onChange={(e) => handleProfileChange(item.field, e.target.value)}
-                    placeholder={item.label}
-                    className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
-                  />
+                  {item.field === 'introduce' ?
+                    <Textarea id={item.field}
+                      value={profileChange?.[item.field] ?? profileData?.[item.field]}
+                      onChange={(e) => handleProfileChange(item.field, e.target.value)}
+                      placeholder={item.label}
+                      className="h-32 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
+                    />
+                    : <Input
+                      id={item.field}
+                      value={profileChange?.[item.field] ?? profileData?.[item.field]}
+                      onChange={(e) => handleProfileChange(item.field, e.target.value)}
+                      placeholder={item.label}
+                      className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
+                    />}
                 </div>
               ))}
             </CardContent>
@@ -344,7 +366,7 @@ export function UpdateProfile() {
           <Button
 
             disabled={loading}
-            onClick={handleSave}
+            onClick={() => handleSave()}
             className="h-14 px-8 bg-blue-600 hover:bg-blue-700 shadow-xl rounded-2xl text-white font-semibold border-0 cursor-pointer disabled:cursor-not-allowed"
           >
             <Save className="h-5 w-5 mr-2" />

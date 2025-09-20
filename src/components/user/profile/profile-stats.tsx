@@ -14,19 +14,7 @@ export function ProfileStats() {
             label: "Giờ học",
             value: "156h",
             change: "+8h",
-        },
-        {
-            icon: Award,
-            label: "Chứng chỉ",
-            value: "8",
-            change: "+1",
-        },
-        {
-            icon: Users,
-            label: "Bạn học",
-            value: "47",
-            change: "+3",
-        },
+        }
     ]
 
     return (
