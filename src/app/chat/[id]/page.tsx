@@ -6,6 +6,7 @@ const Chat = () => {
     id: "u1",
     firstName: "Trường",
     lastName: "Trần",
+    type: "student" as const
   };
   const targetUser = {
     id: "u2",

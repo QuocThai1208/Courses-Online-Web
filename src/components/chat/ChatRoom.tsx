@@ -11,6 +11,7 @@ interface Message {
   content: string;
   timestamp: string;
 }
+type UserType = "student" | "teacher";
 
 interface ChatRoomProps {
   roomId: string;
@@ -18,7 +19,7 @@ interface ChatRoomProps {
     id: string;
     firstName: string;
     lastName: string;
-    type: 'teacher' | 'student';
+    type: UserType;
   };
   targetUser: {
     id: string;
