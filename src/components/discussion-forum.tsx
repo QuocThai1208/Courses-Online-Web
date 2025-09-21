@@ -3,12 +3,8 @@
 import type React from "react"
 
 import { useState } from "react"
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-// import { Button } from "@/components/ui/button"
-// import { Textarea } from "@/components/ui/textarea"
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-// import { Badge } from "@/components/ui/badge"
-import { MessageCircle, ThumbsUp, Reply, Send, Pin } from "lucide-react"
+import { useParams, useRouter } from "next/navigation"
+import { MessageCircle, ThumbsUp, Reply, Send, Pin, ExternalLink } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Textarea } from "./ui/textarea"
 import { Button } from "./ui/button"
@@ -32,6 +28,10 @@ interface Discussion {
 }
 
 export function DiscussionForum() {
+  const params = useParams()
+  const router = useRouter()
+  const courseId = params.id as string
+
   const [newMessage, setNewMessage] = useState("")
   const [discussions, setDiscussions] = useState<Discussion[]>([
     {
@@ -100,10 +100,20 @@ export function DiscussionForum() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageCircle className="w-5 h-5" />
-          Thảo luận
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <MessageCircle className="w-5 h-5" />
+            Thảo luận
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/course/${courseId}/forum`)}
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Xem diễn đàn
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* New Message Form */}

@@ -23,7 +23,7 @@ const CourseDetailPublic = () => {
             try {
                 const res = await api.get(`/courses/${id}/detail/`)
                 setCourse(res.data)
-                setUrl('https://www.youtube.com/watch?v=6r7jzy1LABY&list=RDZbR6dYkqorI&index=27')
+                setUrl(res.data.video_url)
             } catch (error) {
                 console.error("Error fetching course:", error)
             } finally {

@@ -73,6 +73,9 @@ export function Header() {
             <Link href="/contact" className="hover:text-accent transition-colors">
               Liên hệ
             </Link>
+            <Link href="/my-courses" className="hover:text-accent transition-colors">
+              Khóa học của tôi
+            </Link>
             <Link href="/user/profile" className="hover:text-accent transition-colors">
               Tài khoản
             </Link>

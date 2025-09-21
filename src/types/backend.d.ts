@@ -476,7 +476,48 @@ declare global {
         lecturer: ILecturer;
         students_count: number;
         chapters: IChapter[];
+    }
 
+    interface IForum {
+        id: number;
+        name: string;
+        description: string;
+        course: number;
+        user: string;
+        is_locked: boolean;
+        active: boolean;
+        created_at: string;
+    }
+
+    interface ITopic {
+        id: number;
+        forum: number;
+        user: string;
+        title: string;
+        content: string;
+        is_pinned: boolean;
+        is_locked: boolean;
+        view_count: number;
+        last_activity: string;
+        comment_count: number;
+        last_comment: {
+            user: string;
+            content: string;
+            created_at: string;
+        } | null;
+        created_at: string;
+    }
+
+    interface IComment {
+        id: number;
+        user: string;
+        user_avatar: string | null;
+        forum: number | null;
+        topic: number | null;
+        parent: number | null;
+        content: string;
+        replies: IComment[];
+        created_at: string;
     }
 
 

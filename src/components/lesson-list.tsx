@@ -32,14 +32,7 @@ export function LessonList({ course, setUrl }: IProps) {
 
   return (
     <Card className="sticky top-4">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Nội dung khóa học</span>
-          <Badge variant="secondary" className="text-xs">
-            156 bài học
-          </Badge>
-        </CardTitle>
-      </CardHeader>
+
       <CardContent className="p-0">
         <div className="space-y-1">
           {course.chapters.map((chapter) => (
@@ -67,7 +60,7 @@ export function LessonList({ course, setUrl }: IProps) {
                     <Button
                       key={lesson.id}
                       variant="ghost"
-                      className="w-full justify-start p-4 pl-12 h-auto text-left hover:#de3e2d/50"
+                      className="w-full justify-start p-4 pl-12 h-auto text-left hover:bg-red-500/50"
                       onClick={() => setUrl(lesson?.video_url)}
                     >
                       <div className="flex items-center gap-3 w-full">

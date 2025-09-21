@@ -106,7 +106,7 @@ export function FeaturedCourses() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        <span>{Math.floor(course.duration / 60)} phút</span>
+                        <span>{course.duration} phút</span>
                       </div>
                     </div>
                   </CardContent>

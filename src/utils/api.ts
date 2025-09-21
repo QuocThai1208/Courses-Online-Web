@@ -17,7 +17,21 @@ export const endpoints = {
     lessons: 'lessons/',
 
     enrollments: 'enrollments/',
-    enrollmentsCreate: 'enrollments/create/'
+    enrollmentsCreate: 'enrollments/create/',
+
+    // Progress tracking endpoints
+    lessonProgress: 'lesson-progress/',
+    lessonProgressUpdate: 'lesson-progress/update-progress/',
+    lessonProgressCourse: (courseId: string) => `lesson-progress/course/${courseId}/`,
+    enrolledCourses: 'enrolled-courses/',
+
+    // Forum endpoints
+    forums: 'forums/',
+    topics: 'topics/',
+    comments: 'comments/',
+    forumByCourse: (courseId: string) => `forums/?course=${courseId}`,
+    topicsByForum: (forumId: string) => `topics/?forum_id=${forumId}`,
+    commentsByTopic: (topicId: string) => `comments/?topic_id=${topicId}`
 }
 
 export const authApis = (token: string) => {
