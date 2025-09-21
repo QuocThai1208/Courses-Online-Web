@@ -129,9 +129,11 @@ export default function LoginPage() {
 
                     <p className="text-center text-sm mt-4">
                         Chưa có tài khoản?{" "}
-                        <a href="#" className="text-blue-600 hover:underline">
+                        <button className="text-blue-600 hover:underline"
+                            onClick={() => router.push('/auth/register')}
+                        >
                             Đăng kí
-                        </a>
+                        </button>
                     </p>
                 </div>
             </div>

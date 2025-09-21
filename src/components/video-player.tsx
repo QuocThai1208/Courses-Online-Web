@@ -1,12 +1,17 @@
+"use client"
 
 
-export function VideoPlayer() {
+interface VideoPlayerProps {
+  url: string | null
+}
+
+export function VideoPlayer({ url }: VideoPlayerProps) {
+  if (!url) return null
 
   return (
-
     <div className="relative w-full h-auto">
       <video
-        src="https://api.huynhngoctruong.io.vn/image/user/soudcloud.mp4"
+        src={url}
         controls
         className="w-full h-auto rounded-xl object-cover border-1"
       />

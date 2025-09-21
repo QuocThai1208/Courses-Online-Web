@@ -19,6 +19,7 @@ export function Header() {
   const user = useContext(MyUserContext)
   const dispatch = useContext(MyDispatchContext)
 
+
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -37,6 +38,7 @@ export function Header() {
     }
 
     loadUser()
+    console.log(">> check user", user)
   }, [dispatch, user])
 
   const handleLogout = () => {
@@ -84,7 +86,7 @@ export function Header() {
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar || "/placeholder-user.jpg"} alt={user.username} />
-                      <AvatarFallback>{user.first_name?.[0]}</AvatarFallback>
+                      <AvatarFallback>{user.username}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -106,7 +108,7 @@ export function Header() {
                 <Button variant="ghost" className="text-primary-foreground hover:opacity-80" onClick={() => router.push('/auth/signin')}>
                   Đăng nhập
                 </Button>
-                <Button variant="secondary">Đăng ký</Button>
+                <Button variant="secondary" onClick={() => router.push('/auth/register')}>Đăng ký</Button>
               </>
             )}
           </div>
