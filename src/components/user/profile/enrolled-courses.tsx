@@ -84,7 +84,7 @@ export function EnrolledCourses() {
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <Users className="h-3 w-3" />
-                                        <span>100</span>
+                                        <span>{course.course_obj.total_student}</span>
                                     </div>
                                     <Badge variant="secondary" className="text-xs">
                                         {course.course_obj.subject}

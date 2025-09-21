@@ -9,8 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar"
 import { Eye, EyeOff, Camera, Save, X, User, Mail, Phone, Lock } from "lucide-react"
 import { MyUserContext } from "@/src/context/userContext"
 import { useRouter } from "next/navigation"
-import { authApis, endpoints } from "@/src/utils/api"
-
+import api, { authApis, endpoints } from "@/src/utils/api"
+import qs from 'qs';
 
 interface PasswordData {
   currentPassword: string
@@ -109,6 +109,24 @@ export function UpdateProfile() {
     if (validatePassword() === false) return
     try {
       setLoading(true)
+      setMsgPassword('') 
+    
+      const loginRes = await api.post(endpoints['token'],
+        qs.stringify({
+          grant_type: 'password',
+          username: user.username, 
+          password: passwordData.currentPassword, 
+          client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
+          client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      )
+      
+      if (loginRes.status === 200) {
       const token = localStorage.getItem('token') ?? ''
       const res = await authApis(token).patch(endpoints['curent_user'], {
         first_name: profileUpdate.first_name,
@@ -119,10 +137,10 @@ export function UpdateProfile() {
         password: passwordData.newPassword, 
         phone: profileUpdate.phone
       })
-      console.log("update profile res:", res.data)
       
       setMsgPassword("Cập nhật mật khẩu thành công !")
       handleCancel()
+    }
     } catch (e) {
       console.log("error update profile:", e)
     } finally {

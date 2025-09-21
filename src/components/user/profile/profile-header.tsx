@@ -51,9 +51,7 @@ export function ProfileHeader() {
                     </div>
 
                     <p className="text-foreground leading-relaxed text-lg max-w-3xl">
-                        Học viên tích cực với niềm đam mê học hỏi công nghệ mới. Đã hoàn thành khóa học
-                        và đang tiếp tục hành trình phát triển kỹ năng lập trình. Chuyên tâm vào Frontend Development và luôn sẵn
-                        sàng chia sẻ kiến thức với cộng đồng học tập.
+                        {user?.introduce}
                     </p>
 
 
@@ -70,7 +68,7 @@ export function ProfileHeader() {
                 </div>
                 <div className="flex items-center gap-3">
                     <MapPin className="w-5 h-5" />
-                    <span>Hà Nội, Việt Nam</span>
+                    <span>{user?.address}</span>
                 </div>
                 <div className="flex items-center gap-3">
                     <Calendar className="w-5 h-5" />

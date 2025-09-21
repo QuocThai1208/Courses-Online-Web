@@ -81,7 +81,8 @@ const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
     return num.toLocaleString("vi-VN") + " đ";
   };
 
-  const token = "0LSxDH1j5nZ4Zcl0KqAGdBlTtCeg4Q"
+  const token = "0X9qd1Bnhmxyg9DViENPKAhhrHhORL"
+
 
   const registerCoure = async () => {
     try {
