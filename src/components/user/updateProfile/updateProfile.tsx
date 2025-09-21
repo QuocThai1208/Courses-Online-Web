@@ -50,6 +50,7 @@ export function UpdateProfile() {
   const router = useRouter()
   const profileData = useContext(MyUserContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const user = useContext(MyUserContext)
 
   const [loading, setLoading] = useState(false)
   const [profileUpdate, setProfileUpdate] = useState<any | null>(profileData)
@@ -110,14 +111,17 @@ export function UpdateProfile() {
       setLoading(true)
       const token = localStorage.getItem('token') ?? ''
       const res = await authApis(token).patch(endpoints['curent_user'], {
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
-        username: profileData.username,
-        email: profileData.email,
-        avatar: profileData.avtar,
-        password: passwordData.newPassword,
-        phone: profileData.phone
+        first_name: profileUpdate.first_name,
+        last_name: profileUpdate.last_name,
+        username: profileUpdate.username,
+        email: profileUpdate.email,
+        avatar: profileUpdate.avatar,
+        password: passwordData.newPassword, 
+        phone: profileUpdate.phone
       })
+      console.log("update profile res:", res.data)
+      
+      setMsgPassword("Cập nhật mật khẩu thành công !")
       handleCancel()
     } catch (e) {
       console.log("error update profile:", e)
