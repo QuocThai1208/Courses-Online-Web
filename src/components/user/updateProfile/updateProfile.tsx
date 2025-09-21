@@ -128,15 +128,31 @@ export function UpdateProfile() {
       
       if (loginRes.status === 200) {
       const token = localStorage.getItem('token') ?? ''
-      const res = await authApis(token).patch(endpoints['curent_user'], {
-        first_name: profileUpdate.first_name,
-        last_name: profileUpdate.last_name,
-        username: profileUpdate.username,
-        email: profileUpdate.email,
-        avatar: profileUpdate.avatar,
-        password: passwordData.newPassword, 
-        phone: profileUpdate.phone
-      })
+      const formData = new FormData();
+
+      formData.append("first_name", profileUpdate.first_name || "");
+      formData.append("last_name", profileUpdate.last_name || "");
+      formData.append("username", profileUpdate.username || "");
+      formData.append("email", profileUpdate.email || "");
+      formData.append("phone", profileUpdate.phone || "");
+
+      if (profileUpdate.avatar instanceof File) {
+        formData.append("avatar", profileUpdate.avatar);
+      }
+
+      if (passwordData.newPassword) {
+        formData.append("password", passwordData.newPassword);
+      }
+
+      const res = await authApis(token).patch(
+        endpoints["curent_user"],
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       
       setMsgPassword("Cập nhật mật khẩu thành công !")
       handleCancel()
