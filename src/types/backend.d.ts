@@ -389,4 +389,136 @@ declare global {
         result: T[]
     }
 
+
+    interface ICourse {
+        id: number;
+        subject: string;
+        image: string;
+        category: number;
+        category_name: string;
+        total_student: number;
+        lecturer: number;
+        lecturer_name: string;
+        name: string;
+        description: string;
+        price: string; // có thể đổi thành number nếu bạn muốn parse
+        level: string;
+        duration: number;
+        created_at: string; // hoặc Date nếu bạn parse
+    }
+
+    interface ILecturer {
+        id: number;
+        username: string;
+        email: string;
+        first_name: string;
+        last_name: string;
+        avatar: string | null;
+        address: string | null;
+        introduce: string | null;
+        phone: string | null;
+        date_joined: string;   // có thể đổi sang Date nếu bạn parse
+        userRole: string;      // "teacher" | "student" nếu có enum
+        is_active: boolean;
+
+    }
+
+    export interface IDocument {
+        id: number;
+        lesson: number;
+        name: string;
+        file_url: string;
+        type: string;
+        active: boolean;
+        created_at: string;
+        updated_at?: string | null;
+    }
+
+    export interface ILesson {
+        id: number;
+        chapter: number;
+        name: string;
+        description: string;
+        type: string;
+        video_url: string;
+        duration: number; // tính bằng giây
+        is_published: boolean;
+        active: boolean;
+        created_at: string;
+        updated_at?: string | null;
+        documents: IDocument[];
+    }
+
+    export interface IChapter {
+        id: number;
+        course: number;
+        name: string;
+        description: string;
+        is_published: boolean;
+        active: boolean;
+        created_at: string;
+        updated_at?: string | null;
+        lessons: ILesson[];
+    }
+
+
+    interface ICourseDetail {
+        id: number;
+        name: string;
+        description: string;
+        price: string;
+        level: "so_cap" | "trung_cap" | "cao_cap";
+        duration: number; // giây
+        thumbnail_url: string | null;
+        learning_outcomes: string;
+        requirements: string;
+        video_url: string;
+        lecturer: ILecturer;
+        students_count: number;
+        chapters: IChapter[];
+    }
+
+    interface IForum {
+        id: number;
+        name: string;
+        description: string;
+        course: number;
+        user: string;
+        is_locked: boolean;
+        active: boolean;
+        created_at: string;
+    }
+
+    interface ITopic {
+        id: number;
+        forum: number;
+        user: string;
+        title: string;
+        content: string;
+        is_pinned: boolean;
+        is_locked: boolean;
+        view_count: number;
+        last_activity: string;
+        comment_count: number;
+        last_comment: {
+            user: string;
+            content: string;
+            created_at: string;
+        } | null;
+        created_at: string;
+    }
+
+    interface IComment {
+        id: number;
+        user: string;
+        user_avatar: string | null;
+        forum: number | null;
+        topic: number | null;
+        parent: number | null;
+        content: string;
+        replies: IComment[];
+        created_at: string;
+    }
+
+
 }

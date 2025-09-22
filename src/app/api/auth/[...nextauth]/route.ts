@@ -7,62 +7,12 @@ import { AuthOptions } from "next-auth"
 
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
-import { sendRequest } from "@/src/utils/api";
-
-
-
-
-
+import { sendRequest } from "@/src/utils/sendapi";
 
 
 export const authOptions: AuthOptions = {
-    // Configure one or more authentication providers
-
     secret: process.env.NEXTAUTH_SECRET,
-
-
     providers: [
-        CredentialsProvider({
-            // The name to display on the sign in form (e.g. 'Sign in with...')
-            name: 'Credentials',
-            // The credentials is used to generate a suitable form on the sign in page.
-            // You can specify whatever fields you are expecting to be submitted.
-            // e.g. domain, username, password, 2FA token, etc.
-            // You can pass any HTML attribute to the <input> tag through the object.
-            credentials: {
-                username: { label: "Email", type: "text" },
-                password: { label: "Password", type: "password" }
-            },
-            async authorize(credentials, req) {
-
-
-                const res = await sendRequest<IBackendRes<JWT>>({
-                    url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
-                    method: "POST",
-                    body: {
-                        username: credentials?.username,
-                        password: credentials?.password
-                    }
-                })
-
-
-                // If no error and we have user data, return it
-                if (res && res.data) {
-                    return res.data as any;
-                }
-                else {
-                    throw new Error(res?.message as string);
-
-                }
-
-                // if (!res?.error) {
-                //     const router = useRouter(),
-                //     router.push('/');
-                // }
-                // Return null if user data could not be retrieved
-
-            }
-        }),
         GoogleProvider({
             clientId: process.env.GOOGLE_ID!,
             clientSecret: process.env.GOOGLE_SECRET!,
@@ -162,9 +112,6 @@ export const authOptions: AuthOptions = {
                 session.user.role = token.role;
                 //@ts-ignore
                 session.user.shared = token.shared;
-
-
-
 
             }
 
