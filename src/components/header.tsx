@@ -73,9 +73,11 @@ export function Header() {
             <Link href="/my-courses" className="hover:text-accent transition-colors">
               Khóa học của tôi
             </Link>
-            <Link href="/auth/signin" className="hover:text-accent transition-colors">
-              Tài khoản
-            </Link>
+            {user && (
+              <Link href="/user/profile" className="hover:text-accent transition-colors">
+                Tài khoản
+              </Link>
+            )}
           </nav>
 
           {/* Auth buttons or User Profile */}
