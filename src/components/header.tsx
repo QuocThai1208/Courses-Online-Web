@@ -64,7 +64,7 @@ export function Header() {
             <Link href="/" className="hover:text-accent transition-colors">
               Trang chủ
             </Link>
-            <Link href="/courses" className="hover:text-accent transition-colors">
+            <Link href="/course" className="hover:text-accent transition-colors">
               Khóa học
             </Link>
             <Link href="/about" className="hover:text-accent transition-colors">
