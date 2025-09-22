@@ -130,17 +130,36 @@ export default function CourseLearnPage() {
             const token = localStorage.getItem('token')
             if (!token) return
 
-            await authApis(token).post('/lesson-progress/update-progress/', {
+            console.log('Updating lesson progress:', {
                 lesson_id: lessonId,
                 watch_time: watchTime,
                 completion_percentage: completionPercentage
             })
 
+            const response = await authApis(token).post('/lesson-progress/update-progress/', {
+                lesson_id: lessonId,
+                watch_time: watchTime,
+                completion_percentage: completionPercentage
+            })
+
+            console.log('Progress update response:', response.data)
+
             // Refresh progress data
             const progressResponse = await authApis(token).get(`/lesson-progress/course/${courseId}/`)
             setProgressData(progressResponse.data)
-        } catch (error) {
+
+            toast({
+                title: "Thành công",
+                description: `Đã cập nhật tiến độ học tập: ${completionPercentage.toFixed(1)}%`,
+                variant: "default"
+            })
+        } catch (error: any) {
             console.error('Error updating lesson progress:', error)
+            toast({
+                title: "Lỗi",
+                description: error.response?.data?.error || "Không thể cập nhật tiến độ học tập",
+                variant: "destructive"
+            })
         }
     }
 
@@ -165,6 +184,24 @@ export default function CourseLearnPage() {
         }
 
         updateLessonProgress(currentLessonId, 0, 100, 'COMPLETED')
+    }
+
+    const handleManualProgress = (percentage: number) => {
+        if (!currentLessonId) return
+
+        // Find lesson name for success toast if completed
+        if (percentage >= 100) {
+            const currentLesson = courseData?.chapters
+                .flatMap(chapter => chapter.lessons)
+                .find(lesson => lesson.id === currentLessonId)
+
+            if (currentLesson) {
+                setCompletedLessonName(currentLesson.name)
+                setShowSuccessToast(true)
+            }
+        }
+
+        updateLessonProgress(currentLessonId, 0, percentage, percentage >= 90 ? 'COMPLETED' : 'IN_PROGRESS')
     }
 
     if (loading) {
@@ -304,14 +341,7 @@ export default function CourseLearnPage() {
                                         <MessageSquare className="w-4 h-4 mr-2" />
                                         Thảo luận
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="hover:bg-purple-50"
-                                    >
-                                        <Bookmark className="w-4 h-4 mr-2" />
-                                        Lưu
-                                    </Button>
+
                                 </div>
                             </div>
                         )}
@@ -329,6 +359,7 @@ export default function CourseLearnPage() {
                                     url={currentVideoUrl}
                                     onTimeUpdate={handleVideoTimeUpdate}
                                     onComplete={handleVideoComplete}
+                                    onManualProgress={handleManualProgress}
                                 />
                                 <div className="absolute top-4 right-4">
                                     <Badge className="bg-black/70 text-white hover:bg-black/80">

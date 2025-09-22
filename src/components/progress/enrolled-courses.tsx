@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CourseProgressCard } from "./course-progress"
+
 // import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 // import { Skeleton } from "./ui/skeleton"
 import { BookOpen, Clock, Users } from "lucide-react"
@@ -9,6 +9,7 @@ import { authApis, endpoints } from "../../utils/api"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader } from "../ui/card"
 import { Skeleton } from "../ui/skeleton"
+import { CourseCard } from "./course-progress"
 
 interface EnrolledCourse {
     id: number
@@ -44,7 +45,7 @@ export function EnrolledCourses() {
                 }
 
                 const response = await authApis(token).get(endpoints.enrolledCourses || 'enrolled-courses/')
-                setCourses(response.data.results || response.data)
+                setCourses(response.data)
                 console.log(response.data)
                 console.log(response.data.results)
             } catch (error) {
@@ -119,10 +120,10 @@ export function EnrolledCourses() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {courses.map((enrolledCourse) => (
-                    <CourseProgressCard
+                    <CourseCard
                         key={enrolledCourse.id}
-                        progress={enrolledCourse.progress}
-                        onContinue={() => handleContinueCourse(enrolledCourse.course.id)}
+                        course={enrolledCourse.course}
+                    // onContinue={() => handleContinueCourse(enrolledCourse.course.id)}
                     />
                 ))}
             </div>

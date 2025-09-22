@@ -27,7 +27,7 @@ export function CourseInfo({ course }: IProps) {
           <div className="flex flex-wrap justify-around gap-4">
             <div className="text-center p-4 bg-muted rounded-lg min-w-[120px] border-2">
               <Clock className="w-6 h-6 mx-auto mb-2 text-primary" />
-              <div className="font-semibold">{course.duration} phút</div>
+              <div className="font-semibold">{Math.floor(course.duration / 60)} phút</div>
               <div className="text-sm text-muted-foreground">Video</div>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg min-w-[120px] border-2">
