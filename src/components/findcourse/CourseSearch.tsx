@@ -1,150 +1,210 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Search, Filter, Star, Clock, Users, ChevronDown } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Search, Filter, Clock, Users, ChevronDown } from 'lucide-react';
+import api, { endpoints } from '../../utils/api';
+import Link from "next/link";
 
-const CourseSearch = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Tất cả danh mục');
-  const [selectedInstructor, setSelectedInstructor] = useState('Tất cả giảng viên');
-  const [priceRange, setPriceRange] = useState('Tất cả');
-  const [showFilters, setShowFilters] = useState(true);
+interface Course {
+  id: number;
+  subject: string;
+  image: string;
+  category: number;
+  lecturer: number;
+  name: string;
+  description: string;
+  price: string;
+  level: string;
+  duration: number;
+  created_at: string;
+}
 
-  const courses = [
-    {
-      id: 1,
-      title: 'Lập trình Java cơ bản',
-      instructor: 'Phạm Trần Minh Khuê',
-      price: '900,000',
-      priceValue: 900000,
-      rating: 4.8,
-      students: 1250,
-      duration: '40 giờ',
-      image: '/api/placeholder/300/200',
-      category: 'Lập trình',
-      level: 'Cơ bản'
-    },
-    {
-      id: 2,
-      title: 'React.js từ Zero đến Hero',
-      instructor: 'Nguyễn Văn An',
-      price: '1,200,000',
-      priceValue: 1200000,
-      rating: 4.9,
-      students: 890,
-      duration: '60 giờ',
-      image: '/api/placeholder/300/200',
-      category: 'Web Development',
-      level: 'Trung cấp'
-    },
-    {
-      id: 3,
-      title: 'Python cho Data Science',
-      instructor: 'Lê Thị Hoa',
-      price: '1,500,000',
-      priceValue: 1500000,
-      rating: 4.7,
-      students: 670,
-      duration: '80 giờ',
-      image: '/api/placeholder/300/200',
-      category: 'Data Science',
-      level: 'Nâng cao'
-    },
-    {
-      id: 4,
-      title: 'Node.js Backend Development',
-      instructor: 'Trần Quốc Việt',
-      price: '1,100,000',
-      priceValue: 1100000,
-      rating: 4.6,
-      students: 540,
-      duration: '50 giờ',
-      image: '/api/placeholder/300/200',
-      category: 'Backend',
-      level: 'Trung cấp'
-    },
-    {
-      id: 5,
-      title: 'Angular Framework Nâng cao',
-      instructor: 'Nguyễn Thị Mai',
-      price: '800,000',
-      priceValue: 800000,
-      rating: 4.5,
-      students: 320,
-      duration: '35 giờ',
-      image: '/api/placeholder/300/200',
-      category: 'Web Development',
-      level: 'Nâng cao'
-    },
-    {
-      id: 6,
-      title: 'Machine Learning cơ bản',
-      instructor: 'Trần Văn Đức',
-      price: '2,200,000',
-      priceValue: 2200000,
-      rating: 4.9,
-      students: 750,
-      duration: '100 giờ',
-      image: '/api/placeholder/300/200',
-      category: 'Data Science',
-      level: 'Trung cấp'
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Teacher {
+  id: number;
+  first_name: string;
+  last_name: string;
+}
+
+interface CoursesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Course[];
+}
+
+const CourseSearch: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedInstructor, setSelectedInstructor] = useState<string>('');
+  const [priceRange, setPriceRange] = useState<string>('');
+  const [showFilters, setShowFilters] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
+  
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [totalCourses, setTotalCourses] = useState<number>(0);
+
+  const loadCourses = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      const res = await api.get(endpoints["courses"]);
+      console.log('Courses response:', res.data);
+      
+      const data = res.data as CoursesResponse;
+      if (data && data.results) {
+        setCourses(data.results);
+        setTotalCourses(data.count);
+      } else {
+        setCourses([]);
+        setTotalCourses(0);
+      }
+    } catch (error) {
+      console.error("Failed to load courses", error);
+      setCourses([]);
+      setTotalCourses(0);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const loadCategories = async (): Promise<void> => {
+    try {
+      const res = await api.get(endpoints["categories"]);
+      console.log('Categories response:', res.data);
+      
+      if (res.data && Array.isArray(res.data)) {
+        setCategories(res.data as Category[]);
+      }
+    } catch (error) {
+      console.error("Failed to load categories", error);
+      setCategories([]);
+    }
+  };
+
+  const loadTeachers = async (): Promise<void> => {
+    try {
+      const res = await api.get(endpoints["teacher"]);
+      console.log('Teachers response:', res.data);
+      
+      if (res.data && Array.isArray(res.data)) {
+        setTeachers(res.data as Teacher[]);
+      } else if (res.data && (res.data as any).results) {
+        setTeachers((res.data as any).results as Teacher[]);
+      }
+    } catch (error) {
+      console.error("Failed to load teachers", error);
+      setTeachers([]);
+    }
+  };
+
+  useEffect(() => {
+    loadCourses();
+    loadCategories();
+    loadTeachers();
+  }, []);
+
+  const priceRanges = [
+    { value: '', label: 'Tất cả' },
+    { value: 'under_100k', label: 'Dưới 100,000đ' },
+    { value: '100k_500k', label: '100,000đ - 500,000đ' },
+    { value: '500k_1m', label: '500,000đ - 1,000,000đ' },
+    { value: 'over_1m', label: 'Trên 1,000,000đ' }
   ];
 
-  const categories = ['Tất cả danh mục', 'Lập trình', 'Web Development', 'Data Science', 'Backend', 'Mobile'];
-  const instructors = ['Tất cả giảng viên', 'Phạm Trần Minh Khuê', 'Nguyễn Văn An', 'Lê Thị Hoa', 'Trần Quốc Việt', 'Nguyễn Thị Mai', 'Trần Văn Đức'];
-  const priceRanges = ['Tất cả', 'Dưới 1 triệu', '1-2 triệu', 'Trên 2 triệu'];
+  const levelLabels: Record<string, string> = {
+    'so_cap': 'Sơ cấp',
+    'trung_cap': 'Trung cấp', 
+    'nang_cao': 'Nâng cao'
+  };
 
-  const checkPriceRange = (price: number, range: any) => {
+  const checkPriceRange = (price: string, range: string): boolean => {
+    const priceValue = parseFloat(price);
+    
     switch (range) {
-      case 'Dưới 1 triệu':
-        return price < 1000000;
-      case '1-2 triệu':
-        return price >= 1000000 && price <= 2000000;
-      case 'Trên 2 triệu':
-        return price > 2000000;
-      case 'Tất cả':
+      case 'under_100k':
+        return priceValue < 100000;
+      case '100k_500k':
+        return priceValue >= 100000 && priceValue <= 500000;
+      case '500k_1m':
+        return priceValue >= 500000 && priceValue <= 1000000;
+      case 'over_1m':
+        return priceValue > 1000000;
+      case '':
       default:
         return true;
     }
   };
 
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.instructor.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'Tất cả danh mục' || course.category === selectedCategory;
-    const matchesInstructor = selectedInstructor === 'Tất cả giảng viên' || course.instructor === selectedInstructor;
-    const matchesPrice = checkPriceRange(course.priceValue, priceRange);
+  const getCategoryName = (categoryId: number): string => {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category ? category.name : 'Chưa phân loại';
+  };
+
+  const getTeacherName = (teacherId: number): string => {
+    const teacher = teachers.find(t => t.id === teacherId);
+     return teacher ? `${teacher.first_name} ${teacher.last_name}` : "Unknown";
+  };
+
+  const filteredCourses = courses.filter((course: Course) => {
+    const matchesSearch = course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         course.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         course.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = !selectedCategory || course.category.toString() === selectedCategory;
+    
+    const matchesInstructor = !selectedInstructor || course.lecturer.toString() === selectedInstructor;
+    
+    const matchesPrice = checkPriceRange(course.price, priceRange);
     
     return matchesSearch && matchesCategory && matchesInstructor && matchesPrice;
   });
 
-  const resetFilters = () => {
-    setSelectedCategory('Tất cả danh mục');
-    setSelectedInstructor('Tất cả giảng viên');
-    setPriceRange('Tất cả');
+  const resetFilters = (): void => {
+    setSelectedCategory('');
+    setSelectedInstructor('');
+    setPriceRange('');
     setSearchTerm('');
   };
 
-  const getCourseIcon = (category: string): string => {
-    const icons: Record<string, string> = {
-      'Lập trình': '💻',
-      'Web Development': '🌐',
-      'Data Science': '📊',
-      'Backend': '⚙️',
-      'Mobile': '📱'
+  const getCourseIcon = (categoryId: number): string => {
+    const icons: Record<number, string> = {
+      1: '💻', 
+      2: '⚙️', 
+      3: '🔒', 
+      4: '📊' 
     };
-    return icons[category] || '💻';
+    return icons[categoryId] || '💻';
   };
 
   const getLevelColor = (level: string): string => {
     const colors: Record<string, string> = {
-      'Cơ bản': 'bg-green-100 text-green-800',
-      'Trung cấp': 'bg-blue-100 text-blue-800',
-      'Nâng cao': 'bg-red-100 text-red-800'
+      'so_cap': 'bg-green-100 text-green-800',
+      'trung_cap': 'bg-blue-100 text-blue-800',
+      'nang_cao': 'bg-red-100 text-red-800'
     };
     return colors[level] || 'bg-gray-100 text-gray-800';
   };
+
+  const formatPrice = (price: string): string => {
+    return new Intl.NumberFormat('vi-VN').format(parseFloat(price));
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang tải khóa học...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -187,8 +247,11 @@ const CourseSearch = () => {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 >
+                  <option value="">Tất cả danh mục</option>
                   {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
+                    <option key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -201,8 +264,11 @@ const CourseSearch = () => {
                   onChange={(e) => setSelectedInstructor(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 >
-                  {instructors.map(instructor => (
-                    <option key={instructor} value={instructor}>{instructor}</option>
+                  <option value="">Tất cả giảng viên</option>
+                  {teachers.map(teacher => (
+                    <option key={teacher.id} value={teacher.id.toString()}>
+                      {teacher.first_name + teacher.last_name || `Giảng viên ${teacher.id}`}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -216,7 +282,9 @@ const CourseSearch = () => {
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 >
                   {priceRanges.map(range => (
-                    <option key={range} value={range}>{range}</option>
+                    <option key={range.value} value={range.value}>
+                      {range.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -227,18 +295,16 @@ const CourseSearch = () => {
                   onClick={resetFilters}
                   className="px-4 py-3 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors font-medium"
                 >
-                  <i className="fas fa-redo-alt mr-2"></i>
                   Đặt lại
                 </button>
                 <button className="px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium">
-                  <i className="fas fa-search mr-2"></i>
                   Áp dụng lọc
                 </button>
               </div>
             </div>
 
             {/* Active Filters Display */}
-            {(selectedCategory !== 'Tất cả danh mục' || selectedInstructor !== 'Tất cả giảng viên' || priceRange !== 'Tất cả' || searchTerm) && (
+            {(selectedCategory || selectedInstructor || priceRange || searchTerm) && (
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Bộ lọc đang áp dụng:</h4>
                 <div className="flex flex-wrap gap-2">
@@ -248,22 +314,22 @@ const CourseSearch = () => {
                       <button onClick={() => setSearchTerm('')} className="ml-2 text-blue-600 hover:text-blue-800">×</button>
                     </span>
                   )}
-                  {selectedCategory !== 'Tất cả danh mục' && (
+                  {selectedCategory && (
                     <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-                      {selectedCategory}
-                      <button onClick={() => setSelectedCategory('Tất cả danh mục')} className="ml-2 text-green-600 hover:text-green-800">×</button>
+                      {getCategoryName(parseInt(selectedCategory))}
+                      <button onClick={() => setSelectedCategory('')} className="ml-2 text-green-600 hover:text-green-800">×</button>
                     </span>
                   )}
-                  {selectedInstructor !== 'Tất cả giảng viên' && (
+                  {selectedInstructor && (
                     <span className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">
-                      {selectedInstructor}
-                      <button onClick={() => setSelectedInstructor('Tất cả giảng viên')} className="ml-2 text-purple-600 hover:text-purple-800">×</button>
+                      {getTeacherName(parseInt(selectedInstructor))}
+                      <button onClick={() => setSelectedInstructor('')} className="ml-2 text-purple-600 hover:text-purple-800">×</button>
                     </span>
                   )}
-                  {priceRange !== 'Tất cả' && (
+                  {priceRange && (
                     <span className="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full">
-                      {priceRange}
-                      <button onClick={() => setPriceRange('Tất cả')} className="ml-2 text-yellow-600 hover:text-yellow-800">×</button>
+                      {priceRanges.find(r => r.value === priceRange)?.label}
+                      <button onClick={() => setPriceRange('')} className="ml-2 text-yellow-600 hover:text-yellow-800">×</button>
                     </span>
                   )}
                 </div>
@@ -280,7 +346,7 @@ const CourseSearch = () => {
               {searchTerm && ` cho "${searchTerm}"`}
             </p>
             <div className="text-sm text-gray-500">
-              Tổng cộng: {courses.length} khóa học
+              Tổng cộng: {totalCourses} khóa học
             </div>
           </div>
         </div>
@@ -290,66 +356,83 @@ const CourseSearch = () => {
           {filteredCourses.map(course => (
             <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group hover:-translate-y-1">
               {/* Course Image */}
-              <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center relative overflow-hidden">
+              <div className="h-48 relative overflow-hidden">
+                {course.image ? (
+                  <img 
+                    src={course.image} 
+                    alt={course.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="h-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                    <div className="text-white text-center">
+                      <div className="text-4xl mb-2">{getCourseIcon(course.category)}</div>
+                      <h3 className="font-semibold text-sm px-4 line-clamp-2">{course.name}</h3>
+                    </div>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-                <div className="text-white text-center relative z-10">
-                  <div className="text-4xl mb-2">{getCourseIcon(course.category)}</div>
-                  <h3 className="font-semibold text-sm px-4 line-clamp-2">{course.title}</h3>
-                </div>
               </div>
 
               {/* Course Content */}
               <div className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    {getCategoryName(course.category)}
+                  </span>
+                  <span className={`px-2 py-1 text-xs rounded-full ${getLevelColor(course.level)}`}>
+                    {levelLabels[course.level] || course.level}
+                  </span>
+                </div>
+
                 <h3 className="font-semibold text-lg mb-2 text-gray-900 line-clamp-2">
-                  {course.title}
+                  {course.name}
                 </h3>
                 
+                <p className="text-gray-600 text-sm mb-2">
+                  {course.subject}
+                </p>
+
                 <p className="text-gray-600 text-sm mb-3 flex items-center">
                   <Users className="h-3 w-3 mr-1" />
-                  {course.instructor}
+                  {getTeacherName(course.lecturer)}
+                </p>
+
+                <p className="text-gray-500 text-xs mb-3 line-clamp-2">
+                  {course.description}
                 </p>
 
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-1">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          className={`h-3 w-3 ${i < Math.floor(course.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">{course.rating}</span>
-                    <span className="text-sm text-gray-500">({course.students.toLocaleString()})</span>
-                  </div>
                   <div className="flex items-center space-x-1 text-gray-500">
                     <Clock className="h-3 w-3" />
-                    <span className="text-xs">{course.duration}</span>
+                    <span className="text-xs">{course.duration} giờ</span>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(course.created_at).toLocaleDateString('vi-VN')}
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="text-xl font-bold text-blue-600">
-                      {course.price}đ
+                      {formatPrice(course.price)}đ
                     </span>
                   </div>
-                  <span className={`px-2 py-1 text-xs rounded-full ${getLevelColor(course.level)}`}>
-                    {course.level}
-                  </span>
                 </div>
 
-                <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium">
-                  <i className="fas fa-eye mr-2"></i>
+                <Link
+                  href={`/course/${course.id}`}
+                  className="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-center"
+                >
                   Xem chi tiết
-                </button>
+                </Link>
               </div>
             </div>
           ))}
         </div>
 
         {/* No Results */}
-        {filteredCourses.length === 0 && (
+        {filteredCourses.length === 0 && !loading && (
           <div className="text-center py-16 bg-white rounded-lg shadow-sm">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
