@@ -6,8 +6,8 @@ import { Input } from "../../ui/input"
 import { Label } from "../../ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar"
-import { Eye, EyeOff, Camera, Save, X, User, Mail, Phone, Lock } from "lucide-react"
-import { MyUserContext } from "@/src/context/userContext"
+import { Eye, EyeOff, Camera, Save, X, User, Mail, Phone, Lock, ChevronDown, ChevronUp } from "lucide-react"
+import { MyDispatchContext, MyUserContext } from "@/src/context/userContext"
 import { useRouter } from "next/navigation"
 import api, { authApis, endpoints } from "@/src/utils/api"
 import qs from 'qs';
@@ -51,12 +51,17 @@ export function UpdateProfile() {
   const profileData = useContext(MyUserContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const user = useContext(MyUserContext)
+  const dispatch = useContext(MyDispatchContext)
 
   const [loading, setLoading] = useState(false)
   const [profileUpdate, setProfileUpdate] = useState<any | null>(profileData)
   const [reviewAvtar, setReviewAvatar] = useState<string | null>(null)
   const [msgPassword, setMsgPassword] = useState<string | null>(null)
-
+  const [msgProfile, setMsgProfile] = useState<string | null>(null)
+  
+  const [showPasswordSection, setShowPasswordSection] = useState(false)
+  const [wantToChangePassword, setWantToChangePassword] = useState(false)
+  
   const [passwordData, setPasswordData] = useState<PasswordData>({
     currentPassword: "",
     newPassword: "",
@@ -81,7 +86,28 @@ export function UpdateProfile() {
     setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }))
   }
 
+  const resetPasswordData = () => {
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    })
+    setMsgPassword(null)
+  }
+
+  const togglePasswordChange = () => {
+    const newState = !wantToChangePassword
+    setWantToChangePassword(newState)
+    if (!newState) {
+      resetPasswordData()
+    }
+  }
+
   const validatePassword = () => {
+    if (!wantToChangePassword) {
+      return true
+    }
+
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
     for (let i of infoPassword) {
@@ -105,12 +131,12 @@ export function UpdateProfile() {
     return true
   }
 
-  const handleSave = async () => {
-    if (validatePassword() === false) return
+  const validateCurrentPassword = async () => {
+    if (!wantToChangePassword) {
+      return true
+    }
+
     try {
-      setLoading(true)
-      setMsgPassword('') 
-    
       const loginRes = await api.post(endpoints['token'],
         qs.stringify({
           grant_type: 'password',
@@ -126,7 +152,26 @@ export function UpdateProfile() {
         }
       )
       
-      if (loginRes.status === 200) {
+      return loginRes.status === 200
+    } catch (error) {
+      setMsgPassword("Mật khẩu hiện tại không đúng!")
+      return false
+    }
+  }
+
+  const handleSave = async () => {
+    if (!validatePassword()) return
+    
+    try {
+      setLoading(true)
+      setMsgPassword('') 
+      setMsgProfile('')
+      
+      if (wantToChangePassword) {
+        const isValidPassword = await validateCurrentPassword()
+        if (!isValidPassword) return
+      }
+      
       const token = localStorage.getItem('token') ?? ''
       const formData = new FormData();
 
@@ -140,7 +185,7 @@ export function UpdateProfile() {
         formData.append("avatar", profileUpdate.avatar);
       }
 
-      if (passwordData.newPassword) {
+      if (wantToChangePassword && passwordData.newPassword) {
         formData.append("password", passwordData.newPassword);
       }
 
@@ -153,12 +198,27 @@ export function UpdateProfile() {
           },
         }
       );
+      console.log("update profile res:", res.data)
+
+      dispatch?.({
+        "type": "update",
+        "payload":res.data
+      })
       
-      setMsgPassword("Cập nhật mật khẩu thành công !")
-      handleCancel()
-    }
+      if (wantToChangePassword) {
+        setMsgPassword("Cập nhật thông tin và mật khẩu thành công!")
+      } else {
+        setMsgProfile("Cập nhật thông tin thành công!")
+      }
+      
+      if (wantToChangePassword) {
+        resetPasswordData()
+        setWantToChangePassword(false)
+      }
+      
     } catch (e) {
       console.log("error update profile:", e)
+      setMsgProfile("Có lỗi xảy ra khi cập nhật thông tin!")
     } finally {
       setLoading(false)
     }
@@ -188,6 +248,16 @@ export function UpdateProfile() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto py-12 px-4 max-w-4xl">
         <div className="space-y-8">
+          {msgProfile && (
+            <div className={`p-4 rounded-xl text-center font-medium ${
+              msgProfile.includes('thành công') 
+                ? 'bg-green-50 text-green-700 border border-green-200' 
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {msgProfile}
+            </div>
+          )}
+
           <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
             <CardHeader className="pb-6">
               <div className="flex items-center gap-3">
@@ -302,71 +372,121 @@ export function UpdateProfile() {
             </CardContent>
           </Card>
 
+          {/* Password Section - Now Collapsible and Optional */}
           <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-            <CardHeader className="pb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
-                  <Lock className="h-5 w-5 text-white" />
+            <CardHeader 
+              className="pb-6 cursor-pointer" 
+              onClick={() => setShowPasswordSection(!showPasswordSection)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
+                    <Lock className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Bảo mật tài khoản</CardTitle>
+                    <CardDescription className="text-base">
+                      {wantToChangePassword ? "Đang thay đổi mật khẩu" : "Nhấp để thay đổi mật khẩu (tùy chọn)"}
+                    </CardDescription>
+                  </div>
                 </div>
-                <div>
-                  <CardTitle className="text-xl">Bảo mật tài khoản</CardTitle>
-                  <CardDescription className="text-base">Cập nhật mật khẩu để bảo vệ tài khoản của bạn</CardDescription>
-                </div>
-              </div>
-              <div className="text-red-500">
-                {msgPassword}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {infoPassword.map((item) => (
-                <div key={item.field} className="space-y-3">
-                  <Label htmlFor={item.field} className="text-sm font-semibold text-gray-700">
-                    {item.label}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id={item.field}
-                      type={showPasswords[item.show as keyof typeof showPasswords] ? "text" : "password"}
-                      value={passwordData[item.field as keyof PasswordData]}
-                      onChange={(e) => handlePasswordChange(item.field as keyof PasswordData, e.target.value)}
-                      placeholder={item.label}
-                      className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors pr-12"
-                    />
+                <div className="flex items-center gap-3">
+                  {wantToChangePassword && (
                     <Button
-                      type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100 rounded-lg"
-                      onClick={() => togglePasswordVisibility(item.show as keyof typeof showPasswords)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        togglePasswordChange()
+                      }}
+                      className="text-sm"
                     >
-                      {showPasswords[item.show as keyof typeof showPasswords] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      Hủy đổi mật khẩu
+                    </Button>
+                  )}
+                  {showPasswordSection ? (
+                    <ChevronUp className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-400" />
+                  )}
+                </div>
+              </div>
+              {msgPassword && (
+                <div className="text-red-500 mt-3">
+                  {msgPassword}
+                </div>
+              )}
+            </CardHeader>
+            
+            {showPasswordSection && (
+              <CardContent className="space-y-6">
+                {!wantToChangePassword ? (
+                  <div className="text-center py-8">
+                    <Lock className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Thay đổi mật khẩu</h3>
+                    <p className="text-gray-500 mb-6">Bạn có muốn thay đổi mật khẩu không?</p>
+                    <Button
+                      onClick={togglePasswordChange}
+                      className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                    >
+                      <Lock className="h-4 w-4 mr-2" />
+                      Đổi mật khẩu
                     </Button>
                   </div>
-                </div>
-              ))}
+                ) : (
+                  <>
+                    {infoPassword.map((item) => (
+                      <div key={item.field} className="space-y-3">
+                        <Label htmlFor={item.field} className="text-sm font-semibold text-gray-700">
+                          {item.label}
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id={item.field}
+                            type={showPasswords[item.show as keyof typeof showPasswords] ? "text" : "password"}
+                            value={passwordData[item.field as keyof PasswordData]}
+                            onChange={(e) => handlePasswordChange(item.field as keyof PasswordData, e.target.value)}
+                            placeholder={item.label}
+                            className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors pr-12"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100 rounded-lg"
+                            onClick={() => togglePasswordVisibility(item.show as keyof typeof showPasswords)}
+                          >
+                            {showPasswords[item.show as keyof typeof showPasswords] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
 
-              <div className="p-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Lock className="h-4 w-4" />
-                  Yêu cầu mật khẩu mạnh
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
-                    Ít nhất 8 ký tự
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full"></div>1 chữ hoa (A-Z)
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full"></div>1 chữ thường (a-z)
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full"></div>1 số (0-9)
-                  </div>
-                </div>
-              </div>
-            </CardContent>
+                    <div className="p-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+                      <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <Lock className="h-4 w-4" />
+                        Yêu cầu mật khẩu mạnh
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
+                          Ít nhất 8 ký tự
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-2 h-2 bg-amber-400 rounded-full"></div>1 chữ hoa (A-Z)
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-2 h-2 bg-amber-400 rounded-full"></div>1 chữ thường (a-z)
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-2 h-2 bg-amber-400 rounded-full"></div>1 số (0-9)
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            )}
           </Card>
         </div>
 
@@ -380,7 +500,6 @@ export function UpdateProfile() {
             Hủy
           </Button>
           <Button
-
             disabled={loading}
             onClick={handleSave}
             className="h-14 px-8 bg-blue-600 hover:bg-blue-700 shadow-xl rounded-2xl text-white font-semibold border-0 cursor-pointer disabled:cursor-not-allowed"
