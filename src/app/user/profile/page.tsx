@@ -19,6 +19,7 @@ const Profile = () => {
             router.push('/user/login/')
         }
     }, [user, router])
+
     if (!user) return <div className="mx-auto my-auto">Vui lòng đăng nhập!</div>
     return (
         <div className="min-h-screen bg-background">
