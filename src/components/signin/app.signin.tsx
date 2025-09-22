@@ -10,7 +10,7 @@ import { useContext, useState } from "react";
 import qs from 'qs';
 import { toast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation";
-
+import { signIn } from 'next-auth/react'
 
 export default function LoginPage() {
 
@@ -122,6 +122,7 @@ export default function LoginPage() {
                         <button
                             type="button"
                             className="w-full border py-2 rounded-md hover:bg-gray-50 transition"
+                            onClick={() => signIn('google', { callbackUrl: '/' })}
                         >
                             Đăng nhập với Google
                         </button>

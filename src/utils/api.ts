@@ -4,7 +4,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL
 
 export const endpoints = {
     token: '/o/token/',
-
+    authSocial: '/auth/social/',
     curent_user: 'users/current-user/',
 
     categories: 'categories/',

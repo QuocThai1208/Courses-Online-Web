@@ -1,3 +1,6 @@
+
+'use client'
+
 import { notFound } from "next/navigation"
 import { Chapter, ICourseDetail, Lesson } from "@/src/types/course"
 import { ChevronLeft, ChevronRight } from "lucide-react"

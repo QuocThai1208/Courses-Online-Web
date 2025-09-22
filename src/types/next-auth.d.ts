@@ -1,47 +1,39 @@
-import NextAuth from "next-auth"
-
 import NextAuth, { DefaultSession } from "next-auth"
 
-
-
 declare module "next-auth" {
-
     interface JWT {
-        "access_token": string,
-        "_id": string,
-        "name": string,
-        "email": string,
-        "role": string[],
-        "avatar": string,
-        "countFollowers": number,
-        "typeLogin": string,
-        "followers": string[],
-        "following": string[],
-        "shared": string[],
-        "socketId": string
+        accessToken?: string;
+        refreshToken?: string;
+        user?: {
+            id: string;
+            email: string;
+            name: string;
+            avatar?: string;
+            role?: string[];
+        };
+        // Legacy fields for backward compatibility
+        "access_token"?: string,
+        "_id"?: string,
+        "name"?: string,
+        "email"?: string,
+        "role"?: string[],
+        "avatar"?: string,
+        "countFollowers"?: number,
+        "typeLogin"?: string,
+        "followers"?: string[],
+        "following"?: string[],
+        "shared"?: string[],
+        "socketId"?: string
     }
-}
 
-
-declare module "next-auth" {
-    /**
-     * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
-     */
-    interface Session {
+    interface Session extends DefaultSession {
+        accessToken?: string;
         user: {
-            "access_token": string,
-            "_id": string,
-            "name": string,
-            "email": string,
-            "role": string[],
-            "avatar": string,
-            "countFollowers": number,
-            "typeLogin": string,
-            "followers": string[],
-            "following": string[],
-            "shared": string[],
-            "socketId": string
-        }
+            id: string;
+            email: string;
+            name: string;
+            avatar?: string;
+            role?: string[];
+        } & DefaultSession["user"];
     }
-
 }

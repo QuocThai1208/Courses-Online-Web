@@ -5,6 +5,11 @@ import { Header } from "../components/header";
 import { Footer } from "../components/footer";
 import { Toaster } from "../components/ui/toaster";
 import ClientProvider from "../components/clientProvider";
+import { ProgressProviders } from "../components/provider/progress.provider";
+import SessionProviderWrapper from "../components/session-provider-wrapper";
+import GoogleAuthHandler from "../components/auth/google-auth-handler";
+
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,14 +37,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientProvider>
-          <Header />
-          <main className="mt-10 mb-10 px-6 md:px-12 lg:px-20">
-            {children}
-          </main>
-          <Footer />
-          <Toaster />
-        </ClientProvider>
+        <SessionProviderWrapper>
+          <ClientProvider>
+            <ProgressProviders>
+              <GoogleAuthHandler />
+              <Header />
+              <main className="mt-10 mb-10 px-6 md:px-12 lg:px-20">
+                {children}
+              </main>
+              <Footer />
+              <Toaster />
+            </ProgressProviders>
+          </ClientProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
