@@ -19,28 +19,18 @@ export function Footer() {
 
           {/* Quick links */}
           <div>
-            <h3 className="font-semibold mb-4">Liên kết nhanh</h3>
+            <h3 className="font-semibold mb-4">Người xây dựng hệ thống</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-white hover:text-sidebar-accent transition-colors">
-                  Trang chủ
-                </Link>
+                Phạm Quốc Thái
               </li>
               <li>
-                <Link href="/courses" className="text-white hover:text-sidebar-accent transition-colors">
-                  Khóa học
-                </Link>
+                Trần Quang Trường
               </li>
               <li>
-                <Link href="/about" className="text-white hover:text-sidebar-accent transition-colors">
-                  Giới thiệu
-                </Link>
+                Huỳnh Ngọc Trương
               </li>
-              <li>
-                <Link href="/contact" className="text-white hover:text-sidebar-accent transition-colors">
-                  Liên hệ
-                </Link>
-              </li>
+
             </ul>
           </div>
 

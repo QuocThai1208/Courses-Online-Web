@@ -9,8 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar"
 import { Eye, EyeOff, Camera, Save, X, User, Mail, Phone, Lock } from "lucide-react"
 import { MyUserContext } from "@/src/context/userContext"
 import { useRouter } from "next/navigation"
-import { authApis, endpoints } from "@/src/utils/api"
-
+import api, { authApis, endpoints } from "@/src/utils/api"
+import qs from 'qs';
 
 interface PasswordData {
   currentPassword: string
@@ -50,6 +50,7 @@ export function UpdateProfile() {
   const router = useRouter()
   const profileData = useContext(MyUserContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const user = useContext(MyUserContext)
 
   const [loading, setLoading] = useState(false)
   const [profileUpdate, setProfileUpdate] = useState<any | null>(profileData)
@@ -108,17 +109,54 @@ export function UpdateProfile() {
     if (validatePassword() === false) return
     try {
       setLoading(true)
+      setMsgPassword('') 
+    
+      const loginRes = await api.post(endpoints['token'],
+        qs.stringify({
+          grant_type: 'password',
+          username: user.username, 
+          password: passwordData.currentPassword, 
+          client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
+          client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      )
+      
+      if (loginRes.status === 200) {
       const token = localStorage.getItem('token') ?? ''
-      const res = await authApis(token).patch(endpoints['curent_user'], {
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
-        username: profileData.username,
-        email: profileData.email,
-        avatar: profileData.avtar,
-        password: passwordData.newPassword,
-        phone: profileData.phone
-      })
+      const formData = new FormData();
+
+      formData.append("first_name", profileUpdate.first_name || "");
+      formData.append("last_name", profileUpdate.last_name || "");
+      formData.append("username", profileUpdate.username || "");
+      formData.append("email", profileUpdate.email || "");
+      formData.append("phone", profileUpdate.phone || "");
+
+      if (profileUpdate.avatar instanceof File) {
+        formData.append("avatar", profileUpdate.avatar);
+      }
+
+      if (passwordData.newPassword) {
+        formData.append("password", passwordData.newPassword);
+      }
+
+      const res = await authApis(token).patch(
+        endpoints["curent_user"],
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      
+      setMsgPassword("Cập nhật mật khẩu thành công !")
       handleCancel()
+    }
     } catch (e) {
       console.log("error update profile:", e)
     } finally {

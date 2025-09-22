@@ -115,7 +115,6 @@ export function Header() {
               </>
             )}
           </div>
-
           {/* Mobile menu button */}
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-6 w-6" />
