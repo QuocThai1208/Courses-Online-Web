@@ -26,6 +26,7 @@ import { Progress } from "@/src/components/ui/progress"
 import { VideoPlayer } from "@/src/components/video-player"
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { LessonProgressItem } from "@/src/components/progress/lesson-progress"
+
 import { Badge } from "@/src/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar"
 import { Separator } from "@/src/components/ui/separator"
@@ -75,6 +76,7 @@ export default function CourseLearnPage() {
     const [currentLessonId, setCurrentLessonId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [isEnrolled, setIsEnrolled] = useState(false)
+
     const [showSuccessToast, setShowSuccessToast] = useState(false)
     const [completedLessonName, setCompletedLessonName] = useState("")
 
@@ -130,6 +132,7 @@ export default function CourseLearnPage() {
             const token = localStorage.getItem('token')
             if (!token) return
 
+
             console.log('Updating lesson progress:', {
                 lesson_id: lessonId,
                 watch_time: watchTime,
@@ -172,7 +175,6 @@ export default function CourseLearnPage() {
 
     const handleVideoComplete = () => {
         if (!currentLessonId) return
-
         // Find lesson name for success toast
         const currentLesson = courseData?.chapters
             .flatMap(chapter => chapter.lessons)
@@ -293,6 +295,7 @@ export default function CourseLearnPage() {
                                 size="sm"
                                 onClick={() => router.back()}
                                 className="hover:bg-blue-50 hover:text-blue-600 transition-colors"
+
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2" />
                                 Quay lại
@@ -341,7 +344,6 @@ export default function CourseLearnPage() {
                                         <MessageSquare className="w-4 h-4 mr-2" />
                                         Thảo luận
                                     </Button>
-
                                 </div>
                             </div>
                         )}
@@ -384,7 +386,6 @@ export default function CourseLearnPage() {
                                 </div>
                             </Card>
                         )}
-
                         {/* Enhanced Course Info */}
                         <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
                             <CardHeader className="pb-4">
@@ -448,7 +449,6 @@ export default function CourseLearnPage() {
                             </CardContent>
                         </Card>
                     </div>
-
                     {/* Enhanced Lesson List */}
                     <div className="space-y-6">
                         {/* Progress Indicator */}
@@ -495,7 +495,6 @@ export default function CourseLearnPage() {
                                                 const lessonProgress = progressData?.lesson_progresses.find(
                                                     lp => lp.lesson === lesson.id
                                                 )
-
                                                 return (
                                                     <div
                                                         key={lesson.id}
@@ -560,8 +559,6 @@ export default function CourseLearnPage() {
                     </div>
                 </div>
             </div>
-
-            {/* Success Toast */}
             <SuccessToast
                 isVisible={showSuccessToast}
                 onClose={() => setShowSuccessToast(false)}

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-
 // import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 // import { Skeleton } from "./ui/skeleton"
 import { BookOpen, Clock, Users } from "lucide-react"
@@ -10,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader } from "../ui/card"
 import { Skeleton } from "../ui/skeleton"
 import { CourseCard } from "./course-progress"
+
 
 interface EnrolledCourse {
     id: number

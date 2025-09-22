@@ -8,6 +8,7 @@ import { AuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
 import { sendRequest } from "@/src/utils/sendapi";
+
 import api, { authApis, endpoints } from "@/src/utils/api";
 
 
@@ -125,7 +126,6 @@ export const authOptions: AuthOptions = {
 
             return token;
         },
-
         async session({ session, token }) {
             // Truyền thông tin user và token vào session
             if (token.accessToken) {

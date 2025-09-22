@@ -4,22 +4,16 @@ import Link from "next/link"
 import { Card, CardContent } from "../ui/card"
 import { BookOpen, Clock } from "lucide-react"
 
-
-
 interface CourseCardProps {
     course: ICourseDetail
 }
 
 export function CourseCard({ course }: CourseCardProps) {
-
-
     const totalLessons = (course: ICourseDetail) => {
         return course.chapters.reduce((count, chapter) =>
             count + chapter.lessons.filter(lesson => lesson.is_published).length, 0
         )
     }
-
-
     const formatTime = (seconds: number) => {
         const hours = Math.floor(seconds / 3600)
         const minutes = Math.floor((seconds % 3600) / 60)
@@ -29,7 +23,6 @@ export function CourseCard({ course }: CourseCardProps) {
         }
         return `${minutes}m`
     }
-
     const totalLessonsCount = totalLessons(course)
 
     return (
@@ -71,3 +64,4 @@ export function CourseCard({ course }: CourseCardProps) {
         </Link>
     )
 }
+

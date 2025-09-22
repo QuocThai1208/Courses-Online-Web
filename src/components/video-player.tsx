@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Play, Pause, RotateCcw } from "lucide-react"
 
+
 interface VideoPlayerProps {
   url: string | null
   onTimeUpdate?: (currentTime: number, duration: number) => void
@@ -39,7 +40,6 @@ export function VideoPlayer({ url, onTimeUpdate, onComplete, onManualProgress }:
       onTimeUpdate(videoRef.current.currentTime, videoRef.current.duration)
     }
   }
-
   const handleEnded = () => {
     if (onComplete) {
       onComplete()
@@ -83,7 +83,6 @@ export function VideoPlayer({ url, onTimeUpdate, onComplete, onManualProgress }:
         <span className="absolute top-2 right-2 bg-red-600 text-white text-xs md:text-sm font-semibold px-3 py-1 rounded-lg shadow-lg">
           Video miễn phí
         </span>
-
         {/* Manual Progress Controls for YouTube */}
         <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
