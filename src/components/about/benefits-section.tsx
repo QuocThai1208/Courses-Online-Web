@@ -27,7 +27,7 @@ const benefits = [
 ]
 
 export function BenefitsSection() {
-    const [isVisible, setIsVisible] = useState(false)
+    const [isVisible, setIsVisible] =  useState(false)
     const [visibleBenefits, setVisibleBenefits] = useState<boolean[]>(new Array(benefits.length).fill(false))
     const sectionRef = useRef<HTMLElement>(null)
     const benefitRefs = useRef<(HTMLDivElement | null)[]>([])
