@@ -19,7 +19,7 @@ export function ProfileTabs() {
         try {
             setLoading(true)
             const token = localStorage.getItem('token') ?? ''
-            let url = `${endpoints['courses']}?page=${page}`
+            let url = `${endpoints['myCourses']}?page=${page}`
             const res = await authApis(token).get(url)
             setMyCourse(prev => [...prev, ...res.data.results])
             if (res.data.next === null) {

@@ -11,6 +11,7 @@ export const endpoints = {
 
     courses: 'courses/',
 
+    myCourses: 'courses/my-course/',
     coursesDetail: (id: string) => `courses/${id}/`,
 
     chapters: 'chapters/',

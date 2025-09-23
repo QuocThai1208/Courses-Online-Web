@@ -1,19 +1,24 @@
 "use client"
 
-import { MessageCircle, Settings, LogOut } from "lucide-react"
+import { MessageCircle, Settings, LogOut, FilePlus } from "lucide-react"
 import { Card, CardContent } from "../../ui/card"
 import { Button } from "../../ui/button"
 import { useRouter } from "next/navigation"
 import { useContext } from "react"
-import { MyDispatchContext } from "@/src/context/userContext"
+import { MyDispatchContext, MyUserContext } from "@/src/context/userContext"
 
 
 export function ProfileActions() {
+    const user = useContext(MyUserContext)
     const dispatch = useContext(MyDispatchContext)
     const router = useRouter()
 
     const goToChat = () => {
         router.push("/chat/1/")
+    }
+
+    const goToCreateCourse = () => {
+        router.push("/course/create/")
     }
 
     const goToSetting = () => {
@@ -38,6 +43,13 @@ export function ProfileActions() {
                         <MessageCircle className="w-4 h-4 mr-2" />
                         Nhắn tin
                     </Button>
+
+                    {user?.userRole === "teacher" && (
+                        <Button onClick={goToCreateCourse} variant="outline" className="font-manrope bg-transparent w-full justify-start">
+                            <FilePlus className="w-4 h-4 mr-2" />
+                            Tạo khóa học
+                        </Button>
+                    )}
 
                     <Button onClick={goToSetting} variant="outline" className="font-manrope bg-transparent w-full justify-start">
                         <Settings className="w-4 h-4 mr-2" />
