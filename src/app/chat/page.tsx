@@ -1,4 +1,4 @@
-'use client'
+
 
 import { useSearchParams } from "next/navigation"
 import ChatRoom from "@/src/components/chat/ChatRoom"
