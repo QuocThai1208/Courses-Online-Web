@@ -33,7 +33,6 @@ const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
     try {
       setIsLoading(true);
       const res = await api.get(endpoints["coursesDetail"](courseId));
-      console.log('Courses response:', res.data);
       setCourseTitle(res.data.name);
       setCoursePrice(res.data.price);
     } catch (e) {
@@ -46,14 +45,6 @@ const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
   useEffect(() => {
     loadCourseData(id);
   }, [id]);
-
-  const courseFeatures: CourseFeature[] = [
-    { id: 1, text: "50 giờ học chất lượng cao" },
-    { id: 2, text: "Dự án thực tế với mentor" },
-    { id: 3, text: "Hỗ trợ 24/7 từ giảng viên" },
-    { id: 4, text: "Cập nhật nội dung liên tục" },
-    { id: 5, text: "Cộng đồng học viên đông đức" }
-  ];
 
   const courseBenefits: CourseBenefit[] = [
     {
@@ -81,7 +72,7 @@ const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
     return num.toLocaleString("vi-VN") + " đ";
   };
 
-  const token = "0X9qd1Bnhmxyg9DViENPKAhhrHhORL"
+  const token = "70W9xteQoZOihwuBgRlROz2g6EMYRc"
 
 
   const registerCoure = async () => {
@@ -111,24 +102,10 @@ const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
           {/* Left Column - Course Information */}
           <div className="space-y-6">
             <div className="border border-gray-300 p-8 rounded-lg h-fit">
-              <h1 className="text-3xl font-bold text-gray-800 mb-6 leading-tight">
-                {courseTitle.split(' ').map((word, index) => (
-                  <React.Fragment key={index}>
-                    {word}
-                    {index === 1 && <br />}
-                    {index !== 1 && index !== courseTitle.split(' ').length - 1 && ' '}
-                  </React.Fragment>
-                ))}
+              <h1 className="text-3xl font-bold text-gray-800 mb-6">
+                {courseTitle}
               </h1>
 
-              <ul className="space-y-3 text-gray-700 mb-8">
-                {courseFeatures.map((feature) => (
-                  <li key={feature.id} className="flex items-start">
-                    <span className="text-gray-500 mr-3 mt-1">-</span>
-                    <span className="leading-relaxed">{feature.text}</span>
-                  </li>
-                ))}
-              </ul>
 
               <div className="text-4xl font-bold text-gray-800">
                 {formatPrice(coursePrice)}
