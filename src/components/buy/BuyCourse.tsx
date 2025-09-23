@@ -2,6 +2,7 @@
 
 import api, { authApis, endpoints } from '@/src/utils/api';
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 
 interface FormData {
   paymentMethod: 'MOMO';
@@ -19,7 +20,7 @@ interface CourseBenefit {
   description: string;
 }
 
-const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
+const BuyCourse = () => {
   const [formData, setFormData] = useState<FormData>({
     paymentMethod: 'MOMO',
   });
@@ -28,11 +29,14 @@ const BuyCourse: React.FC<{ id: Number }> = ({ id }) => {
 
   const [coursePrice, setCoursePrice] = useState<number>(0);
   const [courseTitle, setCourseTitle] = useState<string>('');
+  const params = useParams()
+  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   const loadCourseData = async (courseId: Number) => {
     try {
+      if (!id) return
       setIsLoading(true);
-      const res = await api.get(endpoints["coursesDetail"](courseId));
+      const res = await api.get(endpoints["coursesDetail"](id));
       console.log('Courses response:', res.data);
       setCourseTitle(res.data.name);
       setCoursePrice(res.data.price);
