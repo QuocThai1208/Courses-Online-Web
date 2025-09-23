@@ -140,7 +140,8 @@ export function CourseCreationWizard() {
                     level: courseData.level,
                     price: courseData.price,
                     duration: courseData.duration,
-                    image: courseData.image
+                    image: courseData.image,
+                    video_url: courseData.video_url
                 }, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 })
