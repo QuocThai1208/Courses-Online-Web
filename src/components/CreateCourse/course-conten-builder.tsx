@@ -7,6 +7,7 @@ import { Input } from "../ui/input"
 import { Badge } from "../ui/badge"
 import { Separator } from "../ui/separator"
 import { Plus, Video, FileText, GripVertical, Edit, Trash2, Upload, Play } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface CourseContentBuilderProps {
     data: any
@@ -49,6 +50,10 @@ const infoLesson = [{
     field: "duration",
     label: "Thời lượng",
     type: 'number'
+}, {
+    field: "video_url",
+    label: "Đường dẫn video",
+    type: 'text'
 }]
 
 export function CourseContentBuilder({ data, onUpdate }: CourseContentBuilderProps) {

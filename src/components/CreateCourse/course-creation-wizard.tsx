@@ -11,6 +11,7 @@ import { CourseBasicInfo } from "./course-basic-info"
 import { CoursePreview } from "./course-preview"
 import { authApis, endpoints } from "@/src/utils/api"
 import { toast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 const steps = [
     {
@@ -36,7 +37,6 @@ const steps = [
     },
 ]
 
-const token = "CidS0bA9jrxwSQqywBNljTHOSfYeox"
 
 const infoCourse = [{
     field: 'subject',
@@ -70,9 +70,11 @@ const infoCourse = [{
 export function CourseCreationWizard() {
     const [currentStep, setCurrentStep] = useState(1)
     const [courseData, setCourseData] = useState<any>({})
-
+    const token = localStorage.getItem('token') ?? ''
     const currentStepData = steps.find((step) => step.id === currentStep)
     const CurrentComponent = currentStepData?.component || CourseBasicInfo
+    const router = useRouter()
+
 
     const progress = (currentStep / steps.length) * 100
 
@@ -133,7 +135,7 @@ export function CourseCreationWizard() {
                     subject: courseData.subject,
                     name: courseData.name,
                     description: courseData.description,
-                    category_id: courseData.category_id,
+                    category: courseData.category_id,
                     level: courseData.level,
                     price: courseData.price,
                     duration: courseData.duration,
@@ -168,8 +170,9 @@ export function CourseCreationWizard() {
                     description: "Bạn đã tạo khóa học thành công!",
                     variant: 'success'
                 })
-            } catch (e) {
-                console.log(e)
+                router.push('user/profile/')
+            } catch (e: any) {
+                console.error(e.response?.data)
                 toast({
                     title: "Thất bại",
                     description: "Đã có sự cố vui lòng thử lại sau!",
@@ -280,7 +283,6 @@ export function CourseCreationWizard() {
                 </Button>
 
                 <div className="flex space-x-3">
-                    <Button variant="outline">Lưu nháp</Button>
                     <Button onClick={() => {
                         currentStep === steps.length ? createCourse() : handleNext()
                     }}
