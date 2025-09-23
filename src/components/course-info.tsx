@@ -99,6 +99,30 @@ export function CourseInfo({ course }: IProps) {
         </CardContent>
       </Card>
 
+  
+      {/* What You'll Learn */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5" />
+            Bạn sẽ học được gì
+          </CardTitle>
+        </CardHeader>
+        <CardContent
+          dangerouslySetInnerHTML={{ __html: course.learning_outcomes }}
+        />
+      </Card>
+
+      {/* Requirements */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Yêu cầu</CardTitle>
+        </CardHeader>
+        <CardContent
+          dangerouslySetInnerHTML={{ __html: course.requirements }}
+        />
+      </Card>
+      
       {/* Instructor */}
       <Card>
         <CardContent>
