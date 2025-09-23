@@ -6,7 +6,7 @@ import { Input } from "../../ui/input"
 import { Label } from "../../ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar"
-import { Eye, EyeOff, Camera, Save, X, User, Mail, Phone, Lock, ChevronDown, ChevronUp } from "lucide-react"
+import { Eye, EyeOff, Camera, Save, X, User, Mail, Phone, Lock, ChevronDown, ChevronUp, Info } from "lucide-react"
 import { MyDispatchContext, MyUserContext } from "@/src/context/userContext"
 import { useRouter } from "next/navigation"
 import api, { authApis, endpoints } from "@/src/utils/api"
@@ -30,6 +30,10 @@ const infoProfile = [{
   field: 'phone',
   label: 'Số điện thoại',
   icon: <Phone className="h-4 w-4" />
+}, {
+  field: 'introduce',
+  label: 'Giới thiệu bản thân',
+  icon: <Info className="h-4 w-4" />
 }]
 
 const infoPassword = [{
@@ -180,6 +184,7 @@ export function UpdateProfile() {
       formData.append("username", profileUpdate.username || "");
       formData.append("email", profileUpdate.email || "");
       formData.append("phone", profileUpdate.phone || "");
+      formData.append("introduce", profileUpdate.introduce || "");
 
       if (profileUpdate.avatar instanceof File) {
         formData.append("avatar", profileUpdate.avatar);
@@ -361,13 +366,22 @@ export function UpdateProfile() {
                     {item.icon}
                     {item.label}
                   </Label>
-                  <Input
-                    id={item.field}
-                    value={profileUpdate?.[item.field]}
-                    onChange={(e) => handleProfileChange(item.field, e.target.value)}
-                    placeholder={item.label}
-                    className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
-                  />
+                  {item.field === 'introduce' ?
+                    <textarea
+                      id={item.field}
+                      value={profileUpdate?.[item.field]}
+                      onChange={(e) => handleProfileChange(item.field, e.target.value)}
+                      placeholder={item.label}
+                      className="h-24 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
+                    />
+                    :
+                    <Input
+                      id={item.field}
+                      value={profileUpdate?.[item.field]}
+                      onChange={(e) => handleProfileChange(item.field, e.target.value)}
+                      placeholder={item.label}
+                      className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
+                    />}
                 </div>
               ))}
             </CardContent>
