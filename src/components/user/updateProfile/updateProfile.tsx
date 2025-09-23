@@ -221,6 +221,7 @@ export function UpdateProfile() {
       setMsgProfile("Có lỗi xảy ra khi cập nhật thông tin!")
     } finally {
       setLoading(false)
+      router.push("user/profile/")
     }
   }
 
