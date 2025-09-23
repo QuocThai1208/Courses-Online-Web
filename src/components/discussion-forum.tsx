@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import axios from "axios"
+import api, { endpoints } from "@/src/utils/api"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -36,29 +36,30 @@ export function DiscussionForum() {
   const [newMessage, setNewMessage] = useState("")
   const [discussions, setDiscussions] = useState<Discussion[]>([])
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/?course_id=${courseId}`)
-        const data = res.data
-        const mapped: Discussion[] = (data || []).map((c: any) => ({
-          id: String(c.id),
-          author: {
-            name: c.author_name || "Ẩn danh",
-            avatar: c.author_avatar || "/placeholder.svg",
-            role: "student",
-          },
-          content: c.content,
-          timestamp: new Date(c.created_at).toLocaleString(),
-          likes: c.likes || 0,
-          replies: 0,
-        }))
-        setDiscussions(mapped)
-      } catch (error) {
-        console.error('Error fetching comments:', error)
-      }
+  const fetchComments = async () => {
+    if (!courseId) return
+    try {
+      const res = await api.get(endpoints.publicCourseCommentsByCourse(String(courseId)))
+      const data = res.data
+      const mapped: Discussion[] = (data || []).map((c: any) => ({
+        id: String(c.id),
+        author: {
+          name: c.author_name || "Ẩn danh",
+          avatar: c.author_avatar || "/placeholder.svg",
+          role: "student",
+        },
+        content: c.content,
+        timestamp: new Date(c.created_at).toLocaleString(),
+        likes: c.likes || 0,
+        replies: 0,
+      }))
+      setDiscussions(mapped)
+    } catch (error) {
+      console.error('Error fetching comments:', error)
     }
-    if (courseId) fetchComments()
+  }
+  useEffect(() => {
+    fetchComments()
   }, [courseId])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,36 +67,15 @@ export function DiscussionForum() {
     if (!newMessage.trim()) return
 
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/`, {
+      await api.post(endpoints.publicCourseComments, {
         course: Number(courseId),
         content: newMessage,
         author_name: "Ẩn danh"
       })
-
-      const c = res.data
-      const newDiscussion: Discussion = {
-        id: String(c.id ?? Date.now()),
-        author: { name: c.author_name || "Ẩn danh", avatar: c.author_avatar || "/placeholder.svg", role: "student" },
-        content: c.content || newMessage,
-        timestamp: new Date(c.created_at || Date.now()).toLocaleString(),
-        likes: c.likes || 0,
-        replies: 0,
-      }
-      setDiscussions([newDiscussion, ...discussions])
       setNewMessage("")
+      await fetchComments()
     } catch (error) {
       console.error('Error posting comment:', error)
-      // fallback optimistic
-      const optimistic: Discussion = {
-        id: Date.now().toString(),
-        author: { name: "Bạn", avatar: "/current-user-avatar.png", role: "student" },
-        content: newMessage,
-        timestamp: "Vừa xong",
-        likes: 0,
-        replies: 0,
-      }
-      setDiscussions([optimistic, ...discussions])
-      setNewMessage("")
     }
   }
 
@@ -115,11 +95,10 @@ export function DiscussionForum() {
 
   const handleLike = async (discussionId: string) => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/${discussionId}/like/`)
+      await api.post(endpoints.publicCourseCommentLike(String(discussionId)))
       toggleLike(discussionId)
     } catch (error) {
       console.error('Error liking comment:', error)
-      // Still update UI optimistically
       toggleLike(discussionId)
     }
   }
