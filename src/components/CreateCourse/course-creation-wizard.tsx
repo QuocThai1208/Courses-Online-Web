@@ -171,7 +171,7 @@ export function CourseCreationWizard() {
                     description: "Bạn đã tạo khóa học thành công!",
                     variant: 'success'
                 })
-                router.push('user/profile/')
+                router.push('/user/profile/')
             } catch (e: any) {
                 console.error(e.response?.data)
                 toast({
