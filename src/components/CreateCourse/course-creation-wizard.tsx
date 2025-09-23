@@ -70,7 +70,6 @@ const infoCourse = [{
 export function CourseCreationWizard() {
     const [currentStep, setCurrentStep] = useState(1)
     const [courseData, setCourseData] = useState<any>({})
-    const token = localStorage.getItem('token') ?? ''
     const currentStepData = steps.find((step) => step.id === currentStep)
     const CurrentComponent = currentStepData?.component || CourseBasicInfo
     const router = useRouter()
@@ -131,6 +130,8 @@ export function CourseCreationWizard() {
     const createCourse = async () => {
         if (validate() === true) {
             try {
+                const token = localStorage.getItem('token')
+                if (!token) return
                 const courseRes = await authApis(token).post(endpoints['courses'], {
                     subject: courseData.subject,
                     name: courseData.name,
