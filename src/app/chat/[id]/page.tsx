@@ -1,7 +1,7 @@
 import ChatRoom from "@/src/components/chat/ChatRoom";
 
 const Chat = () => {
-  const roomId = "room123"; // roomID tạo từ id user và id giáo viên nhắn tin (id user đang đăng nhập và id target)
+  const roomId = "room123"; 
   const currentUser = {
     id: 1,
     firstName: "Trường",
@@ -10,8 +10,9 @@ const Chat = () => {
   };
   const targetUser = {
     id: 2,
-    firstName: "Giáo viên",
-    lastName: "Nguyễn",
+    firstName: "One",
+    lastName: "Teacher",
+    type: "teacher" as const
   };
 
   return (
