@@ -56,27 +56,29 @@ export function LessonList({ course, setUrl }: IProps) {
 
               {expandedChapters.includes(chapter.id) && (
                 <div className="pb-2">
-                  {chapter.lessons.map((lesson) => (
-                    <Button
-                      key={lesson.id}
-                      variant="ghost"
-                      className="w-full justify-start p-4 pl-12 h-auto text-left hover:bg-red-500/50"
-                      onClick={() => setUrl(lesson?.video_url)}
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <div className="flex-shrink-0">
-                          •
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{lesson.name}</div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Clock className="w-3 h-3" />
-                            <div>{formatDuration(lesson.duration)}</div>
+                  {chapter.lessons.map((lesson) =>
+                    lesson.is_published && (
+                      <Button
+                        key={lesson.id}
+                        variant="ghost"
+                        className="w-full justify-start p-4 pl-12 h-auto text-left hover:bg-red-500/50"
+                        onClick={() => setUrl(lesson?.video_url)}
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          <div className="flex-shrink-0">
+                            •
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate">{lesson.name}</div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              <div>{formatDuration(lesson.duration)}</div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Button>
-                  ))}
+                      </Button>
+                    )
+                  )}
                 </div>
               )}
             </div>
