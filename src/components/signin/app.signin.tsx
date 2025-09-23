@@ -75,7 +75,7 @@ export default function LoginPage() {
 
                 <div className="w-1/2 bg-blue-50 flex items-center justify-center">
                     <img
-                        src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fpxhere.com%2Fvi%2Fphoto%2F1447663&psig=AOvVaw0aSLSytnJHdjUx0khBal0R&ust=1758449179747000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCLi2weeL548DFQAAAAAdAAAAABAL"
+                        src="https://res.cloudinary.com/dxw8gtpd8/image/upload/v1758656813/9423.jpg_wh860_wm4pxq.jpg"
                         alt="school-system"
                         className="w-full h-full"
                     />
