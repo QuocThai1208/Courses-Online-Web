@@ -85,13 +85,13 @@ const BuyCourse = () => {
     return num.toLocaleString("vi-VN") + " đ";
   };
 
-  const token = "0X9qd1Bnhmxyg9DViENPKAhhrHhORL"
 
 
   const registerCoure = async () => {
     try {
       setIsLoading(true);
-
+      const token = localStorage.getItem('token')
+      if (!token) return
       const res = await authApis(token).post(endpoints['enrollmentsCreate'], {
         course: id
       })
