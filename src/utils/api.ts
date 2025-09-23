@@ -19,6 +19,7 @@ export const endpoints = {
     lessons: 'lessons/',
 
     enrollments: 'enrollments/',
+    courseComplete: 'enrollments/complete/',
     enrollmentsCreate: 'enrollments/create/',
 
     // Progress tracking endpoints
