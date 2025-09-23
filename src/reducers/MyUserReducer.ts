@@ -6,6 +6,7 @@ export function MyUserReducer(state: any, action: any) {
         case 'login':
             return action.payload
         case 'logout':
+            localStorage.removeItem('token')
             return null
         default:
             return state
