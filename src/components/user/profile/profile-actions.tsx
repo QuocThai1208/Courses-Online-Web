@@ -13,6 +13,10 @@ export function ProfileActions() {
     const dispatch = useContext(MyDispatchContext)
     const router = useRouter()
 
+    const goToChat = () => {
+        router.push("/chat/1/")
+    }
+
     const goToCreateCourse = () => {
         router.push("/course/create/")
     }
@@ -26,6 +30,11 @@ export function ProfileActions() {
             <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-4 font-sans">Hành động</h3>
                 <div className="flex flex-col gap-3">
+
+                    <Button onClick={goToChat} variant="outline" className="font-manrope bg-transparent w-full justify-start">
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Nhắn tin
+                    </Button>
 
                     {user?.userRole === "teacher" && (
                         <Button onClick={goToCreateCourse} variant="outline" className="font-manrope bg-transparent w-full justify-start">
