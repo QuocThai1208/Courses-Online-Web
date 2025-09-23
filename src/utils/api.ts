@@ -10,6 +10,8 @@ export const endpoints = {
     categories: 'categories/',
 
     courses: 'courses/',
+    myCourse: 'courses/my-course/',
+    courses_top: 'courses/top/',
     coursesDetail: (id: Number) => `courses/${id}/`,
     teacher: 'teachers/',
 

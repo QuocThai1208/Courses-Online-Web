@@ -29,9 +29,6 @@ export function Header() {
             <Link href="/about" className="hover:text-accent transition-colors">
               Giới thiệu
             </Link>
-            <Link href="/contact" className="hover:text-accent transition-colors">
-              Liên hệ
-            </Link>
             <Link href="/user/profile" className="hover:text-accent transition-colors">
               Tài khoản
             </Link>

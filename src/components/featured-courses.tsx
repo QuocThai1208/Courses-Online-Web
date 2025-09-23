@@ -1,50 +1,38 @@
-// import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-// import { Button } from "@/components/ui/button"
-// import { Badge } from "@/components/ui/badge"
+"use client"
 import { Clock, Users, Star, Badge } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import api, { endpoints } from "../utils/api"
 
-const courses = [
-  {
-    id: 1,
-    title: "Lập trình Web với React",
-    description: "Học cách xây dựng ứng dụng web hiện đại với React và các công nghệ mới nhất",
-    image: "/placeholder-3xkis.png",
-    instructor: "Nguyễn Văn A",
-    duration: "12 tuần",
-    students: 1250,
-    rating: 4.8,
-    price: "1,500,000 VNĐ",
-    level: "Trung cấp",
-  },
-  {
-    id: 2,
-    title: "Thiết kế UI/UX chuyên nghiệp",
-    description: "Nắm vững nguyên lý thiết kế và tạo ra những giao diện người dùng tuyệt vời",
-    image: "/placeholder-uq487.png",
-    instructor: "Trần Thị B",
-    duration: "10 tuần",
-    students: 890,
-    rating: 4.9,
-    price: "1,200,000 VNĐ",
-    level: "Cơ bản",
-  },
-  {
-    id: 3,
-    title: "Data Science với Python",
-    description: "Khám phá thế giới dữ liệu và machine learning với Python",
-    image: "/python-data-science-course.png",
-    instructor: "Lê Văn C",
-    duration: "16 tuần",
-    students: 2100,
-    rating: 4.7,
-    price: "2,000,000 VNĐ",
-    level: "Nâng cao",
-  },
-]
 
 export function FeaturedCourses() {
+  const router = useRouter()
+  const [coursesTop, setCoursesTop] = useState<any>()
+
+  const loadCoursesTop = async () => {
+    try {
+      const res = await api.get(endpoints['courses_top'])
+      setCoursesTop(res.data)
+
+    } catch (e) {
+      console.log("error loadCoursesTop", e)
+    }
+  }
+
+  const formatPrice = (price: string): string => {
+    return new Intl.NumberFormat('vi-VN').format(parseFloat(price));
+  };
+
+  useEffect(() => {
+    loadCoursesTop();
+  }, [])
+
+  const goToCourses = () => {
+    router.push('/courses/')
+  }
+
   return (
     <section className="py-20 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,42 +44,39 @@ export function FeaturedCourses() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {courses.map((course) => (
-            <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+          {coursesTop?.map((course: any) => (
+            <Card key={course.id} className="overflow-hidden shadow-xl bg-white/80 hover:shadow-2xl transition-shadow">
               <div className="relative">
-                <img src={course.image || "/placeholder.svg"} alt={course.title} className="w-full h-48 object-cover" />
+                <img src={course.image || "/placeholder.svg"} alt={course.name} className="w-full h-48 object-cover" />
                 <Badge className="absolute top-4 left-4">
                   {course.level}
                 </Badge>
               </div>
 
               <CardHeader>
-                <CardTitle className="text-xl">{course.title}</CardTitle>
+                <CardTitle className="text-xl">{course.name}</CardTitle>
                 <p className="text-muted-foreground text-sm">{course.description}</p>
               </CardHeader>
 
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Giảng viên: {course.instructor}</span>
+                  <span>Giảng viên: {course.lecturer_name}</span>
                 </div>
 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    {course.duration}
+                    {course.duration} Giờ
                   </div>
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
-                    {course.students.toLocaleString()}
+                    {course.total_student} Học viên
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    {course.rating}
-                  </div>
+
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-primary">{course.price}</span>
+                  <span className="text-2xl font-bold text-primary">{formatPrice(course.price)}</span>
                 </div>
               </CardContent>
 
@@ -103,7 +88,7 @@ export function FeaturedCourses() {
         </div>
 
         <div className="text-center mt-12">
-          <Button variant="outline" size="lg">
+          <Button onClick={goToCourses} variant="outline" size="lg">
             Xem tất cả khóa học
           </Button>
         </div>
