@@ -16,7 +16,7 @@ const Profile = () => {
 
     useEffect(() => {
         if (!user) {
-            router.push('/user/login/')
+            router.push('/auth/signin')
         }
     }, [user, router])
 
