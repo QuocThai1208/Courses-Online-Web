@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import axios from "axios"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -38,8 +39,8 @@ export function DiscussionForum() {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/?course_id=${courseId}`)
-        const data = await res.json()
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/?course_id=${courseId}`)
+        const data = res.data
         const mapped: Discussion[] = (data || []).map((c: any) => ({
           id: String(c.id),
           author: {
@@ -53,8 +54,8 @@ export function DiscussionForum() {
           replies: 0,
         }))
         setDiscussions(mapped)
-      } catch (e) {
-        // ignore
+      } catch (error) {
+        console.error('Error fetching comments:', error)
       }
     }
     if (courseId) fetchComments()
@@ -65,12 +66,13 @@ export function DiscussionForum() {
     if (!newMessage.trim()) return
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ course: Number(courseId), content: newMessage, author_name: "Ẩn danh" }),
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/`, {
+        course: Number(courseId),
+        content: newMessage,
+        author_name: "Ẩn danh"
       })
-      const c = await res.json()
+
+      const c = res.data
       const newDiscussion: Discussion = {
         id: String(c.id ?? Date.now()),
         author: { name: c.author_name || "Ẩn danh", avatar: c.author_avatar || "/placeholder.svg", role: "student" },
@@ -81,7 +83,8 @@ export function DiscussionForum() {
       }
       setDiscussions([newDiscussion, ...discussions])
       setNewMessage("")
-    } catch (e) {
+    } catch (error) {
+      console.error('Error posting comment:', error)
       // fallback optimistic
       const optimistic: Discussion = {
         id: Date.now().toString(),
@@ -108,6 +111,17 @@ export function DiscussionForum() {
           : discussion,
       ),
     )
+  }
+
+  const handleLike = async (discussionId: string) => {
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/${discussionId}/like/`)
+      toggleLike(discussionId)
+    } catch (error) {
+      console.error('Error liking comment:', error)
+      // Still update UI optimistically
+      toggleLike(discussionId)
+    }
   }
 
   return (
@@ -179,12 +193,7 @@ export function DiscussionForum() {
                       variant="ghost"
                       size="sm"
                       className={`h-8 px-2 ${discussion.isLiked ? "text-primary" : ""}`}
-                      onClick={async () => {
-                        try {
-                          await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/${discussion.id}/like/`, { method: "POST" })
-                        } catch { }
-                        toggleLike(discussion.id)
-                      }}
+                      onClick={() => handleLike(discussion.id)}
                     >
                       <ThumbsUp className="w-4 h-4 mr-1" />
                       {discussion.likes}
