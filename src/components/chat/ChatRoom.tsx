@@ -25,6 +25,7 @@ interface ChatRoomProps {
     id: number;
     firstName: string;
     lastName: string;
+    type: UserType;
   };
 }
 
