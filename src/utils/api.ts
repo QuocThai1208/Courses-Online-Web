@@ -33,7 +33,13 @@ export const endpoints = {
     comments: 'comments/',
     forumByCourse: (courseId: string) => `forums/?course=${courseId}`,
     topicsByForum: (forumId: string) => `topics/?forum_id=${forumId}`,
-    commentsByTopic: (topicId: string) => `comments/?topic_id=${topicId}`
+    commentsByTopic: (topicId: string) => `comments/?topic_id=${topicId}`,
+
+    // Public course comments
+    publicCourseComments: 'public-course-comments/',
+    publicCourseCommentsByCourse: (courseId: string) => `public-course-comments/?course_id=${courseId}`,
+    publicCourseCommentsRecent: (courseId: string) => `public-course-comments/recent/?course_id=${courseId}`,
+    publicCourseCommentLike: (id: string) => `public-course-comments/${id}/like/`
 }
 
 export const authApis = (token: string) => {
