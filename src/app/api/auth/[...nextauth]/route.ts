@@ -7,65 +7,18 @@ import { AuthOptions } from "next-auth"
 
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
-import { sendRequest } from "@/src/utils/api";
+import { sendRequest } from "@/src/utils/sendapi";
 
-
-
-
-
+import api, { authApis, endpoints } from "@/src/utils/api";
 
 
 export const authOptions: AuthOptions = {
-    // Configure one or more authentication providers
-
     secret: process.env.NEXTAUTH_SECRET,
-
-
+    debug: process.env.NODE_ENV === 'development',
     providers: [
-        CredentialsProvider({
-            // The name to display on the sign in form (e.g. 'Sign in with...')
-            name: 'Credentials',
-            // The credentials is used to generate a suitable form on the sign in page.
-            // You can specify whatever fields you are expecting to be submitted.
-            // e.g. domain, username, password, 2FA token, etc.
-            // You can pass any HTML attribute to the <input> tag through the object.
-            credentials: {
-                username: { label: "Email", type: "text" },
-                password: { label: "Password", type: "password" }
-            },
-            async authorize(credentials, req) {
-
-
-                const res = await sendRequest<IBackendRes<JWT>>({
-                    url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
-                    method: "POST",
-                    body: {
-                        username: credentials?.username,
-                        password: credentials?.password
-                    }
-                })
-
-
-                // If no error and we have user data, return it
-                if (res && res.data) {
-                    return res.data as any;
-                }
-                else {
-                    throw new Error(res?.message as string);
-
-                }
-
-                // if (!res?.error) {
-                //     const router = useRouter(),
-                //     router.push('/');
-                // }
-                // Return null if user data could not be retrieved
-
-            }
-        }),
         GoogleProvider({
-            clientId: process.env.GOOGLE_ID!,
-            clientSecret: process.env.GOOGLE_SECRET!,
+            clientId: process.env.NEXT_PUBLIC_GOOGLE_ID!,
+            clientSecret: process.env.NEXT_PUBLIC_GOOGLE_SECRET!,
             authorization: {
                 params: {
                     prompt: "consent",
@@ -74,104 +27,118 @@ export const authOptions: AuthOptions = {
                 }
             }
         }),
-        GithubProvider({
-            clientId: process.env.GITHUB_ID!,
-            clientSecret: process.env.GITHUB_SECRET!,
-        }),
 
 
-
-        // ...add more providers here
     ],
     callbacks: {
         async jwt({ token, user, account, profile, trigger }) {
+            // Xử lý khi đăng nhập bằng Google
+            if (trigger === "signIn" && account?.provider === "google") {
+                console.log(">>> Google sign in detected")
 
+                try {
+                    // Lấy thông tin từ Google profile
+                    const googleProfile = profile as any;
+                    console.log(">>> Google profile:", googleProfile)
 
+                    // Bước 1: Đăng ký user với thông tin Google
+                    const registerResponse = await api.post('/users/register-student/', {
+                        first_name: googleProfile.given_name || '',
+                        last_name: googleProfile.family_name || '',
+                        username: googleProfile.email.split('@')[0], // Tạo username từ email
+                        password: 'GoogleAuth123!', // Password mặc định cho Google auth
+                        confirm_password: 'GoogleAuth123!',
+                        email: googleProfile.email,
+                        phone: '0000000000' // Số điện thoại mặc định
+                    });
 
+                    console.log(">>> User registered successfully");
 
-            if (trigger === "signIn" && account?.provider !== "credentials") {
-                /// đăng nhập với người dùng bằng github để lấy token
-                const res = await sendRequest<IBackendRes<JWT>>({
-                    url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/social`,
-                    method: "POST",
-                    body: { type: account?.provider.toLocaleUpperCase(), username: user.email }
-                })
+                    // Bước 2: Lấy token từ backend
+                    const tokenResponse = await api.post(endpoints.token,
+                        new URLSearchParams({
+                            grant_type: 'password',
+                            username: googleProfile.email.split('@')[0],
+                            password: 'GoogleAuth123!',
+                            client_id: process.env.NEXT_PUBLIC_CLIENT_ID!,
+                            client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET!
+                        }),
+                        {
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            }
+                        }
+                    );
 
-                if (res.data) {
-                    token.access_token = res.data?.access_token;
-                    token._id = res.data?._id;
-                    token.name = res.data?.name;
-                    token.email = res.data?.email;
-                    token.avatar = res.data?.avatar;
-                    token.typeLogin = res.data?.typeLogin;
-                    token.followers = res.data?.followers;
-                    token.following = res.data?.following;
-                    token.role = res?.data?.role;
-                    token.shared = res?.data?.shared;
+                    if (tokenResponse.data && tokenResponse.data.access_token) {
+                        // Lưu access token vào token object
+                        token.accessToken = tokenResponse.data.access_token;
+                        token.refreshToken = tokenResponse.data.refresh_token;
 
+                        // Bước 3: Lấy thông tin user
+                        const userResponse = await authApis(tokenResponse.data.access_token).get(endpoints.curent_user);
+                        token.user = userResponse.data;
 
+                        console.log(">>> Google auth successful, token and user data saved");
+                    }
+                } catch (error: any) {
+                    console.error(">>> Google auth error:", error);
+
+                    // Nếu user đã tồn tại, thử đăng nhập trực tiếp
+                    if (error.response?.status === 400) {
+                        try {
+                            const googleProfile = profile as any;
+
+                            // Thử đăng nhập với user đã tồn tại
+                            const tokenResponse = await api.post(endpoints.token,
+                                new URLSearchParams({
+                                    grant_type: 'password',
+                                    username: googleProfile.email.split('@')[0],
+                                    password: 'GoogleAuth123!',
+                                    client_id: process.env.NEXT_PUBLIC_CLIENT_ID!,
+                                    client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET!
+                                }),
+                                {
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded'
+                                    }
+                                }
+                            );
+
+                            if (tokenResponse.data && tokenResponse.data.access_token) {
+                                token.accessToken = tokenResponse.data.access_token;
+                                token.refreshToken = tokenResponse.data.refresh_token;
+
+                                const userResponse = await authApis(tokenResponse.data.access_token).get(endpoints.curent_user);
+                                token.user = userResponse.data;
+
+                                console.log(">>> Google auth successful with existing user");
+                            }
+                        } catch (loginError) {
+                            console.error(">>> Google login error:", loginError);
+                            throw new Error("Google authentication failed");
+                        }
+                    } else {
+                        throw new Error("Google authentication failed");
+                    }
                 }
             }
-            if (trigger === "signIn" && account?.provider === "credentials") {
 
-
-                //@ts-ignore
-                token.access_token = user?.access_token;
-                //@ts-ignore
-                token._id = user?._id;
-                //@ts-ignore
-                token.name = user?.name;
-                //@ts-ignore
-                token.email = user?.email;
-                //@ts-ignore
-                token.avatar = user?.avatar;
-                //@ts-ignore
-                token.typeLogin = user?.typeLogin;
-                //@ts-ignore
-                token.followers = user?.followers;
-                //@ts-ignore
-                token.following = user?.following;
-                //@ts-ignore
-                token.role = user?.role;
-                //@ts-ignore
-                token.shared = user?.shared;
-
-            }
-
-            return token
+            return token;
         },
-        async session({ session, token, user }) {
-            if (token) {
-                //@ts-ignore
-                session.user.access_token = token.access_token;
-                //@ts-ignore
-                session.user._id = token._id;
-                //@ts-ignore
-                session.user.name = token.name;
-                //@ts-ignore
-                session.user.email = token.email;
-                //@ts-ignore
-                session.user.avatar = token.avatar;
-                //@ts-ignore
-                session.user.typeLogin = token.typeLogin;
-                //@ts-ignore
-                session.user.followers = token.followers;
-                //@ts-ignore
-                session.user.following = token.following;
-                //@ts-ignore
-                session.user.role = token.role;
-                //@ts-ignore
-                session.user.shared = token.shared;
-
-
-
-
+        async session({ session, token }) {
+            // Truyền thông tin user và token vào session
+            if (token.accessToken) {
+                (session as any).accessToken = token.accessToken as string;
+                if (token.user) {
+                    session.user = {
+                        ...session.user,
+                        ...token.user
+                    };
+                }
             }
-
-            return session
-
-
-        },
+            return session;
+        }
     }
 }
 
