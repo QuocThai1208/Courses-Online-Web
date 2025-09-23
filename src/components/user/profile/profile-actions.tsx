@@ -26,7 +26,7 @@ export function ProfileActions() {
             "type": "logout",
         })
 
-        router.push('/user/login/')
+        router.push('/auth/signin/')
     }
 
     return (
