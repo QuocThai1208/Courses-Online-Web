@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { MessageCircle, ThumbsUp, Reply, Send, Pin, ExternalLink } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
@@ -33,54 +33,67 @@ export function DiscussionForum() {
   const courseId = params.id as string
 
   const [newMessage, setNewMessage] = useState("")
-  const [discussions, setDiscussions] = useState<Discussion[]>([
-    {
-      id: "2",
-      author: {
-        name: "Trần Thị B",
-        avatar: "/female-student-avatar.png",
-        role: "student",
-      },
-      content:
-        "Mình có thắc mắc về useState Hook. Khi nào thì nên sử dụng useState và khi nào nên sử dụng useReducer ạ?",
-      timestamp: "1 giờ trước",
-      likes: 12,
-      replies: 3,
-      isLiked: true,
-    },
-    {
-      id: "3",
-      author: {
-        name: "Lê Văn C",
-        avatar: "/male-student-avatar.png",
-        role: "student",
-      },
-      content: "Bài học về JSX rất hay! Mình đã hiểu rõ hơn về cách React render elements. Cảm ơn thầy!",
-      timestamp: "45 phút trước",
-      likes: 8,
-      replies: 1,
-    },
-  ])
+  const [discussions, setDiscussions] = useState<Discussion[]>([])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/?course_id=${courseId}`)
+        const data = await res.json()
+        const mapped: Discussion[] = (data || []).map((c: any) => ({
+          id: String(c.id),
+          author: {
+            name: c.author_name || "Ẩn danh",
+            avatar: c.author_avatar || "/placeholder.svg",
+            role: "student",
+          },
+          content: c.content,
+          timestamp: new Date(c.created_at).toLocaleString(),
+          likes: c.likes || 0,
+          replies: 0,
+        }))
+        setDiscussions(mapped)
+      } catch (e) {
+        // ignore
+      }
+    }
+    if (courseId) fetchComments()
+  }, [courseId])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim()) return
 
-    const newDiscussion: Discussion = {
-      id: Date.now().toString(),
-      author: {
-        name: "Bạn",
-        avatar: "/current-user-avatar.png",
-        role: "student",
-      },
-      content: newMessage,
-      timestamp: "Vừa xong",
-      likes: 0,
-      replies: 0,
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ course: Number(courseId), content: newMessage, author_name: "Ẩn danh" }),
+      })
+      const c = await res.json()
+      const newDiscussion: Discussion = {
+        id: String(c.id ?? Date.now()),
+        author: { name: c.author_name || "Ẩn danh", avatar: c.author_avatar || "/placeholder.svg", role: "student" },
+        content: c.content || newMessage,
+        timestamp: new Date(c.created_at || Date.now()).toLocaleString(),
+        likes: c.likes || 0,
+        replies: 0,
+      }
+      setDiscussions([newDiscussion, ...discussions])
+      setNewMessage("")
+    } catch (e) {
+      // fallback optimistic
+      const optimistic: Discussion = {
+        id: Date.now().toString(),
+        author: { name: "Bạn", avatar: "/current-user-avatar.png", role: "student" },
+        content: newMessage,
+        timestamp: "Vừa xong",
+        likes: 0,
+        replies: 0,
+      }
+      setDiscussions([optimistic, ...discussions])
+      setNewMessage("")
     }
-
-    setDiscussions([newDiscussion, ...discussions])
-    setNewMessage("")
   }
 
   const toggleLike = (id: string) => {
@@ -166,7 +179,12 @@ export function DiscussionForum() {
                       variant="ghost"
                       size="sm"
                       className={`h-8 px-2 ${discussion.isLiked ? "text-primary" : ""}`}
-                      onClick={() => toggleLike(discussion.id)}
+                      onClick={async () => {
+                        try {
+                          await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/public-course-comments/${discussion.id}/like/`, { method: "POST" })
+                        } catch { }
+                        toggleLike(discussion.id)
+                      }}
                     >
                       <ThumbsUp className="w-4 h-4 mr-1" />
                       {discussion.likes}
