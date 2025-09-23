@@ -21,14 +21,6 @@ export function ProfileActions() {
         router.push("/user/update-profile/")
     }
 
-    const logout = () => {
-        dispatch?.({
-            "type": "logout",
-        })
-
-        router.push('/auth/signin/')
-    }
-
     return (
         <Card className="shadow-xl bg-white/80">
             <CardContent className="p-6">
@@ -45,11 +37,6 @@ export function ProfileActions() {
                     <Button onClick={goToSetting} variant="outline" className="font-manrope bg-transparent w-full justify-start">
                         <Settings className="w-4 h-4 mr-2" />
                         Chỉnh sửa
-                    </Button>
-
-                    <Button onClick={logout} variant="outline" className="font-manrope bg-transparent w-full justify-start">
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Đăng xuất
                     </Button>
                 </div>
             </CardContent>
