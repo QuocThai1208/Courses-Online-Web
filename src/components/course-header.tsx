@@ -3,12 +3,20 @@
 import { Star, Users, Clock, Award } from "lucide-react"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
+import { useRouter } from "next/navigation"
 
 interface IProps {
   course: ICourseDetail
 }
 
 export function CourseHeader({ course }: IProps) {
+  const router = useRouter()
+
+  const goToPayment = () => {
+    const id = course.id
+    router.push(`/course/${id}/register`)
+
+  }
   return (
     <div className="bg-card rounded-xl border-1">
       <div className="container mx-auto px-4 py-8">
@@ -34,7 +42,7 @@ export function CourseHeader({ course }: IProps) {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button onClick={goToPayment}  size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
               Đăng ký khóa học
             </Button>
           </div>
