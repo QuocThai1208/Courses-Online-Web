@@ -372,7 +372,7 @@ export function UpdateProfile() {
                       value={profileUpdate?.[item.field]}
                       onChange={(e) => handleProfileChange(item.field, e.target.value)}
                       placeholder={item.label}
-                      className="h-24 border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
+                      className="h-24 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl transition-colors"
                     />
                     :
                     <Input
