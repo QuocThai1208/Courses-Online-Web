@@ -111,14 +111,6 @@ export function DiscussionForum() {
             <MessageCircle className="w-5 h-5" />
             Thảo luận
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`/course/${courseId}/forum`)}
-          >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            Xem diễn đàn
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
