@@ -32,7 +32,7 @@ export function CourseHeader({ course }: IProps) {
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
-                <span>15,234 học viên</span>
+                <span>{course.students_count}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
